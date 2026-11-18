@@ -21,8 +21,10 @@ export function escapeHtml(text) {
   return String(text ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Straight 3D distance. If one point's height is unknown, the height difference is left out.
 export function dist3(a, b) {
-  const dx = a.x - b.x, dy = a.y - b.y, dz = a.z - b.z;
+  const dx = a.x - b.x, dz = a.z - b.z;
+  const dy = a.y === null || a.y === undefined || b.y === null || b.y === undefined ? 0 : a.y - b.y;
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
@@ -40,7 +42,7 @@ export function formatBlocks(blocks) {
 }
 
 export function formatXYZ(p) {
-  return `${p.x}, ${p.y}, ${p.z}`;
+  return `${p.x}, ${formatY(p.y)}, ${p.z}`;
 }
 
 // Finds a dimension from a typed name: full name, start of a name, or short forms OW / N / E.
@@ -58,7 +60,7 @@ export function findDimension(text, dims) {
 export function parseCoordinates(text, dims) {
   const raw = String(text || '').trim();
   if (!raw) return { error: 'empty' };
-  const m = raw.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)\s*(?:[,;]?\s*\(?\s*([A-Za-zÀ-ž _-]+?)\s*\)?)?\s*$/);
+  const m = raw.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,;/\s]\s*(-?\d+(?:\.\d+)?)\s*[,;/\s]\s*(-?\d+(?:\.\d+)?)\s*(?:[,;]?\s*\(?\s*([A-Za-zÀ-ž _-]+?)\s*\)?)?\s*$/);
   if (!m) return { error: 'format' };
   const [x, y, z] = [m[1], m[2], m[3]].map(Number);
   let dim = null;
@@ -69,11 +71,19 @@ export function parseCoordinates(text, dims) {
   return { x, y, z, dim };
 }
 
-// Whole numbers only for dot coordinates.
+// Whole numbers only for dot coordinates. "x y z", "x, y, z" and "x/y/z" all work.
+// Only two numbers means X and Z with an unknown height (y = null).
 export function parseDotCoordinates(text) {
-  const m = String(text || '').trim().match(/^(-?\d+)\s*[,;\s]\s*(-?\d+)\s*[,;\s]\s*(-?\d+)$/);
-  if (!m) return null;
-  return { x: Number(m[1]), y: Number(m[2]), z: Number(m[3]) };
+  const parts = String(text || '').trim().split(/\s*[,;/\s]\s*/).filter((s) => s !== '');
+  if (!parts.every((s) => /^-?\d+$/.test(s))) return null;
+  if (parts.length === 3) return { x: Number(parts[0]), y: Number(parts[1]), z: Number(parts[2]) };
+  if (parts.length === 2) return { x: Number(parts[0]), y: null, z: Number(parts[1]) };
+  return null;
+}
+
+// "1970, ?, -2213" when the height is not known.
+export function formatY(y) {
+  return y === null || y === undefined ? '?' : String(y);
 }
 
 // Letters of the query must appear in the same order in the text.

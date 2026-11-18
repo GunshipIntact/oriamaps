@@ -144,6 +144,7 @@ body.light .router-msg { color: #a01818; }
 .rrow .remove { width: 18px; height: 18px; padding: 0; font-size: 11px; margin-left: 4px; vertical-align: middle; }
 .rrow input.field { height: 28px; font-size: 13px; }
 
+.view-size { position: fixed; left: 16px; bottom: 76px; z-index: 20; font-size: 13px; }
 .compass-btn { position: fixed; left: 16px; bottom: 16px; width: 52px; height: 52px; padding: 0; z-index: 20; }
 .compass-btn canvas, .compass-panel canvas { image-rendering: pixelated; }
 .compass-btn canvas { width: 32px; height: 32px; }
@@ -179,6 +180,7 @@ body.light .dot-card .kind { color: #006a6a; }
 .dot-card .finder .slot { width: 44px; height: 44px; }
 .dot-card .pic { width: 196px; height: 110px; }
 .dot-card .actions { display: flex; gap: 6px; }
+.dot-card .comment { margin: 0; font-size: 14px; font-style: italic; line-height: 1.35; white-space: pre-wrap; color: var(--text); opacity: 0.9; }
 .close-btn { width: 26px; height: 26px; padding: 0; font-size: 13px; }
 
 .hover-bubbles { position: fixed; z-index: 30; pointer-events: none; display: flex; flex-direction: column; gap: 6px; width: 290px; }
@@ -221,6 +223,7 @@ body.light .list-item:hover, body.light .list-item.active { background: rgba(0, 
 .gui .foot { display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px; }
 .gui .field, .gui input.field { background: #000; color: #fff; border-color: #a0a0a0; }
 .gui select.field { appearance: auto; }
+.gui textarea.field { height: auto; min-height: 64px; padding: 8px 10px; resize: vertical; font-family: var(--font); font-size: 15px; line-height: 1.35; }
 .gui .pic-row { display: flex; align-items: center; gap: 10px; }
 .gui .pic-row .slot { width: 96px; height: 56px; }
 .gui .check { color: #3f3f3f; text-shadow: none; }
