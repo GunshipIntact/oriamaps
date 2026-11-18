@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OriaMaps</title>
+<!-- Keep the site out of Google and other search engines (owner's wish). -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Map and route planner for our Minecraft world.">
+<!-- Link preview (Discord, WhatsApp, …) -->
+<meta property="og:title" content="OriaMaps">
+<meta property="og:description" content="Map and route planner for our Minecraft world.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gunshipintact.github.io/oriamaps/">
+<meta property="og:image" content="https://gunshipintact.github.io/oriamaps/assets/icons/share-preview.jpg">
+<meta property="og:image:width" content="800">
+<meta property="og:image:height" content="800">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#1d5a78">
+<!-- Browser tab icon: just the compass, so it stays readable when tiny -->
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/icons/favicon-64.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/favicon-192.png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="map" aria-label="Map of the selected world"></canvas>
+<div id="empty-note" class="empty-note" hidden></div>
+<div id="hover-bubbles" class="hover-bubbles" hidden></div>
+
+<!-- Search (top left) -->
+<div id="search-wrap" class="search-wrap">
+  <label class="field search-field" for="search">
+    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 8 8" shape-rendering="crispEdges" fill="currentColor"><rect x="1" y="0" width="4" height="1"/><rect x="0" y="1" width="1" height="4"/><rect x="5" y="1" width="1" height="4"/><rect x="1" y="5" width="4" height="1"/><rect x="5" y="5" width="1" height="1"/><rect x="6" y="6" width="2" height="2"/></svg>
+    <input id="search" type="text" placeholder="Search dots or players" autocomplete="off" spellcheck="false">
+  </label>
+  <button id="star-btn" class="btn icon-btn star" type="button" aria-label="Save this dot" title="Save this dot" disabled>
+    <svg aria-hidden="true" width="22" height="22" viewBox="0 0 11 11" shape-rendering="crispEdges" fill="currentColor"><rect x="5" y="0" width="1" height="1"/><rect x="5" y="1" width="1" height="1"/><rect x="4" y="2" width="3" height="1"/><rect x="4" y="3" width="3" height="1"/><rect x="0" y="4" width="11" height="1"/><rect x="1" y="5" width="9" height="1"/><rect x="2" y="6" width="7" height="1"/><rect x="2" y="7" width="7" height="1"/><rect x="1" y="8" width="3" height="1"/><rect x="7" y="8" width="3" height="1"/><rect x="1" y="9" width="2" height="1"/><rect x="8" y="9" width="2" height="1"/><rect x="0" y="10" width="2" height="1"/><rect x="9" y="10" width="2" height="1"/></svg>
+  </button>
+</div>
+<div id="left-panel" class="left-panel" hidden></div>
+
+<!-- World picker (top centre) -->
+<div id="world-wrap" class="world-wrap">
+  <button id="world-btn" class="btn world-btn" type="button" aria-haspopup="true">World: <span id="world-name">none</span>
+    <svg aria-hidden="true" width="12" height="8" viewBox="0 0 6 4" shape-rendering="crispEdges" fill="currentColor"><rect x="0" y="0" width="6" height="1"/><rect x="1" y="1" width="4" height="1"/><rect x="2" y="2" width="2" height="1"/></svg>
+  </button>
+  <div id="world-menu" class="menu" hidden></div>
+</div>
+
+<!-- Route planner (top right) -->
+<div id="route-box" class="route-box">
+  <input id="start-input" class="field" type="text" list="dot-names" placeholder="Start, e.g. 120, 64, -340 (Overworld)" autocomplete="off" aria-label="Starting point">
+  <input id="dest-input" class="field" type="text" list="dot-names" placeholder="Destination, e.g. 4000, 64, -2400 (Overworld)" autocomplete="off" aria-label="Destination point">
+  <div class="row-end"><button id="portal-btn" class="btn blue" type="button" aria-pressed="true">Portal travel: ON</button></div>
+  <div class="two">
+    <select id="transport-select" class="btn select" aria-label="Transportation"></select>
+    <select id="terrain-select" class="btn select" aria-label="Terrain difficulty"></select>
+  </div>
+  <div class="row-end"><button id="calc-btn" class="btn green" type="button">Calc Route</button></div>
+</div>
+<datalist id="dot-names"></datalist>
+
+<section id="router" class="panel router" hidden aria-label="Router">
+  <div class="router-head">
+    <span class="router-title">Router</span>
+    <button id="route-star" class="btn icon-btn star" type="button" aria-label="Save this route" title="Save this route">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 11 11" shape-rendering="crispEdges" fill="currentColor"><rect x="5" y="0" width="1" height="1"/><rect x="5" y="1" width="1" height="1"/><rect x="4" y="2" width="3" height="1"/><rect x="4" y="3" width="3" height="1"/><rect x="0" y="4" width="11" height="1"/><rect x="1" y="5" width="9" height="1"/><rect x="2" y="6" width="7" height="1"/><rect x="2" y="7" width="7" height="1"/><rect x="1" y="8" width="3" height="1"/><rect x="7" y="8" width="3" height="1"/><rect x="1" y="9" width="2" height="1"/><rect x="8" y="9" width="2" height="1"/><rect x="0" y="10" width="2" height="1"/><rect x="9" y="10" width="2" height="1"/></svg>
+    </button>
+  </div>
+  <div class="router-stats">
+    <div><span class="muted">Estimated time</span><b id="route-time">-</b></div>
+    <div><span class="muted">Solution path</span><b id="route-blocks">-</b></div>
+  </div>
+  <button id="add-point-btn" class="btn small" type="button">+ add more points</button>
+  <div id="router-msg" class="router-msg" hidden></div>
+  <div id="router-rows" class="router-rows"></div>
+</section>
+
+<!-- Compass (bottom left) -->
+<button id="compass-btn" class="btn compass-btn" type="button" aria-label="Show compasses" aria-expanded="false"><canvas id="compass-icon" width="16" height="16"></canvas></button>
+<div id="compass-panel" class="panel compass-panel" hidden>
+  <figure><canvas id="compass-north" width="16" height="16" role="img" aria-label="Compass pointing north"></canvas><figcaption>Normal compass</figcaption></figure>
+  <figure><canvas id="compass-dot" width="16" height="16" role="img" aria-label="Compass pointing at the selected dot"></canvas><figcaption id="compass-dot-label">To: 0 0 0</figcaption></figure>
+</div>
+
+<!-- Owner tools (bottom centre, only after the owner signs in) -->
+<div id="editor-wrap" class="editor-wrap" hidden>
+  <span id="editor-status" class="tag">Owner tools</span>
+  <div class="panel editor-bar">
+    <button class="btn green small" type="button" data-edit="dot">+ Dot</button>
+    <button class="btn small" type="button" data-edit="world">+ World</button>
+    <button class="btn small" type="button" data-edit="dimension">+ Dimension</button>
+    <button class="btn small" type="button" data-edit="players">Players</button>
+    <button class="btn small" type="button" data-edit="transport">Transport</button>
+  </div>
+</div>
+
+<!-- Sidebar (right) -->
+<aside id="sidebar" class="sidebar" aria-label="Map settings">
+  <div class="logo">OriaMaps</div>
+  <div class="group"><span class="group-title">Saved</span>
+    <button id="saved-loc-btn" class="btn small" type="button">Location</button>
+    <button id="saved-route-btn" class="btn small" type="button">Route</button>
+  </div>
+  <div class="group"><span class="group-title">Dimensions</span><div id="dim-list" class="checks"></div></div>
+  <div class="group"><span class="group-title">Viewing</span>
+    <div class="seg" id="view-seg"><button class="btn small" type="button" data-view="2d">2D</button><button class="btn small" type="button" data-view="3d">3D</button></div>
+  </div>
+  <div class="group"><span class="group-title">Grid</span>
+    <div class="seg three" id="grid-seg"><button class="btn small" type="button" data-grid="3d">3D</button><button class="btn small" type="button" data-grid="floor">Floor</button><button class="btn small" type="button" data-grid="off">Off</button></div>
+  </div>
+  <div class="group"><span class="group-title">Toggles</span><div id="type-list" class="checks"></div></div>
+  <div class="group"><span class="group-title">Players</span>
+    <button id="players-btn" class="btn small" type="button">Find by player</button>
+  </div>
+  <div class="side-bottom">
+    <button id="theme-btn" class="btn icon-btn" type="button" aria-label="Switch light or dark mode" title="Light / dark mode">
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 8 8" shape-rendering="crispEdges" fill="currentColor"><rect x="2" y="0" width="3" height="1"/><rect x="1" y="1" width="2" height="1"/><rect x="0" y="2" width="2" height="4"/><rect x="1" y="6" width="2" height="1"/><rect x="2" y="7" width="4" height="1"/><rect x="3" y="6" width="4" height="1"/><rect x="6" y="5" width="2" height="1"/></svg>
+    </button>
+    <button id="owner-btn" class="btn small" type="button">Owner sign in</button>
+  </div>
+</aside>
+
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

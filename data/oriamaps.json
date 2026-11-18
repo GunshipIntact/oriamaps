@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "dimensions": [
+    { "id": "overworld", "name": "Overworld", "ratio": 1, "minY": -64, "maxY": 320, "color": "#39e07a", "icon": "assets/icons/dim-overworld.png", "note": "" },
+    { "id": "nether", "name": "Nether", "ratio": 8, "minY": 0, "maxY": 256, "color": "#ff4a4a", "icon": "assets/icons/dim-nether.png", "note": "1st layer below the bedrock roof: Y 0 to 125" },
+    { "id": "end", "name": "End", "ratio": 1, "minY": 0, "maxY": 256, "color": "#6a5cff", "icon": "assets/icons/dim-end.png", "note": "" }
+  ],
+  "worlds": [],
+  "players": [
+    { "name": "Oriamx" },
+    { "name": "ErsatzSilver" },
+    { "name": "ME_Eifersucht" },
+    { "name": "Pixelfox5" },
+    { "name": "Forhaut123" },
+    { "name": "Lollettex" },
+    { "name": "Im_Melissa" },
+    { "name": "turtex" },
+    { "name": "patsusama" },
+    { "name": "8hiny" },
+    { "name": "Yen_Nhi" },
+    { "name": "Ba5id" },
+    { "name": "Patsuma" }
+  ],
+  "transports": [
+    { "id": "boat-ice", "name": "Boat", "condition": "Flat blue ice", "speed": 72.73 },
+    { "id": "elytra", "name": "Elytra", "condition": "Gliding at 0° pitch", "speed": 30.0 },
+    { "id": "horse", "name": "Horse", "condition": "Flat terrain (average breed)", "speed": 9.49 },
+    { "id": "minecart", "name": "Minecart", "condition": "Powered track", "speed": 8.0 },
+    { "id": "boat-water", "name": "Boat", "condition": "Flat water", "speed": 8.0 },
+    { "id": "donkey", "name": "Donkey", "condition": "Flat terrain (naturally spawned)", "speed": 7.56 },
+    { "id": "sprint-jump", "name": "Sprint-jumping", "condition": "Flat terrain", "speed": 7.127 },
+    { "id": "walk", "name": "Walking", "condition": "Flat terrain", "speed": 4.317 },
+    { "id": "happy-ghast", "name": "Happy Ghast", "condition": "Flying at 0° pitch", "speed": 3.611 }
+  ],
+  "terrains": [
+    { "id": "none", "name": "No difficulty", "mult": 1 },
+    { "id": "slightly", "name": "Slightly", "mult": 1.5 },
+    { "id": "tricky", "name": "Tricky terrain", "mult": 2 },
+    { "id": "rough", "name": "Rough terrain", "mult": 3 },
+    { "id": "difficult", "name": "Difficult terrain", "mult": 4 }
+  ],
+  "dots": []
+}
