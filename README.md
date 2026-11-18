@@ -34,8 +34,9 @@ Visitors can only look and plan routes. To change anything you sign in with a Gi
 2. Name it `OriaMaps`. Pick an expiration (up to a year; you then make a new one).
 3. **Repository access → Only select repositories →** `oriamaps`.
 4. Scroll down to **Permissions**. There are two boxes, **Repositories** and **Account**, each with its own **+ Add permissions** button.
-   Use the button in the **Repositories** box (the Account list has things like "Followers" and "Email addresses" and no Contents).
-   Tick **Contents**, close the list, and next to Contents change **Read-only** to **Read and write**.
+   Make sure the **Repositories** tab is selected, click **+ Add permissions**, and tick **Contents**
+   (not "Actions": that one is for automated workflows and cannot change files).
+   Close the list, then next to Contents change **Read-only** to **Read and write**.
    (If there is no Repositories box, step 3 is set to "Public repositories"; change it to "Only select repositories".)
    An existing key can be fixed the same way: open it in the Fine-grained tokens list and click **Edit**.
 5. Click **Generate token** and copy it right away (GitHub only shows it once).
@@ -55,7 +56,7 @@ After signing in, the **Owner tools** bar appears at the bottom of the screen:
 - **+ Dimension**: add or change dimensions (name, ratio, lowest/highest Y, colour).
 - **Players**: add people by the name you know them by (for example their Discord name). Fill in their Minecraft Java
   username to load their face automatically, or upload a face picture. With neither, a default head is shown.
-  Press **Look up** next to the Minecraft username to see their face and check that the account exists.
+  Type a Minecraft username and press **Search**: the account appears with its head; click it to fill it in, then save.
   Renaming a player also renames them on all their dots.
 - **Transport**: add or change transport methods and their speeds.
 

@@ -390,14 +390,15 @@ export function initEditor(app) {
           <td class="acts"><button class="btn small" type="button" data-pedit="${esc(x.name)}">Edit</button> <button class="btn small red" type="button" data-pdel="${esc(x.name)}">Remove</button></td></tr>`).join('') || '<tr><td colspan="5" class="hint">No players yet.</td></tr>'}</table>
           <form class="row" style="gap:8px"><span class="lbl" style="font-size:17px">${p ? `Edit ${esc(p.name)}` : 'Add a player'}</span>
           <div class="cols"><div class="row"><label for="p-name">Name</label><input id="p-name" name="name" class="field" placeholder="e.g. Pixelfuchs" value="${esc(p?.name || '')}"></div>
-          <div class="row"><label for="p-mc">Minecraft Java username (optional)</label><div style="display:flex;gap:6px"><input id="p-mc" name="minecraft" class="field" placeholder="e.g. Pixelfox5" value="${esc(p?.minecraft || '')}"><button class="btn small" type="button" data-plookup style="height:36px">Look up</button></div></div></div>
-          <div class="pic-row" id="p-lookup" hidden><div class="slot" style="width:48px;height:48px"></div><span class="hint"></span></div>
+          <div class="row"><label for="p-mc">Minecraft Java username (optional)</label><div style="display:flex;gap:6px"><input id="p-mc" name="minecraft" class="field" placeholder="e.g. Pixelfox5" value="${esc(p?.minecraft || '')}"><button class="btn small" type="button" data-plookup style="height:36px">Search</button></div></div></div>
+          <div id="p-lookup" class="row" hidden><span class="hint" id="p-lookup-msg"></span><button class="list-item" type="button" id="p-pick" style="color:#3f3f3f;background:#d6d6d6;box-shadow:inset 0 0 0 2px #8b8b8b"><span class="slot" style="width:48px;height:48px;flex:none"></span><span class="txt" style="flex:1"><span id="p-pick-name"></span><small>Click to use this name and head</small></span></button></div>
           <div class="row"><span class="lbl">Face picture (optional, used when there is no Minecraft username)</span><div class="pic-row"><label class="btn small" for="p-face">Choose</label><input id="p-face" name="face" type="file" accept="image/*" hidden><span class="hint" id="p-face-name">${p?.face ? 'A face picture is saved.' : 'No picture chosen.'}</span></div>
           ${p?.face ? '<label class="hint"><input type="checkbox" name="noface"> Remove the saved face picture</label>' : ''}</div>
           <div class="foot">${p ? '<button class="btn" type="button" data-pcancel>Cancel edit</button>' : ''}<button class="btn green" type="submit">${p ? 'Save player' : 'Add player'}</button></div></form>`;
       },
       onClick: async (e, c) => {
         if (e.target.closest('[data-plookup]')) return lookUp(c);
+        if (e.target.closest('#p-pick')) return pick(c);
         const b = e.target.closest('[data-pedit],[data-pdel],[data-pcancel]');
         if (!b) return;
         if (b.dataset.pedit) { c.editing = b.dataset.pedit; c.rerender(); return wireFace(c); }
@@ -460,25 +461,37 @@ export function initEditor(app) {
     }
     return { found: null };
   }
+  // Search a Minecraft Java username, then click the result to put its name and head into the form.
   async function lookUp(c) {
     const input = c.root.querySelector('#p-mc');
     const box = c.root.querySelector('#p-lookup');
+    const msg = c.root.querySelector('#p-lookup-msg');
+    const card = c.root.querySelector('#p-pick');
     const name = input.value.trim();
-    if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) return c.fail('Type a Minecraft Java username first (3 to 16 letters, numbers or underscores).');
+    if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) return c.fail('Type a Minecraft Java username into the Minecraft field first (3 to 16 letters, numbers or underscores).');
     c.clear();
     box.hidden = false;
-    box.querySelector('.slot').innerHTML = `<img class="face" src="https://mc-heads.net/avatar/${encodeURIComponent(name)}/64" data-player="${esc(name)}" data-try="0" alt="">`;
-    const text = box.querySelector('.hint');
-    text.textContent = 'Checking…';
+    card.hidden = true;
+    msg.textContent = 'Searching…';
     const res = await lookupMinecraft(name);
-    if (res.found === true) {
-      input.value = res.name;
-      text.textContent = `Found the Minecraft account ${res.name}. Check that the face looks right, then save.`;
-    } else if (res.found === false) {
-      text.textContent = `There is no Minecraft Java account called ${name}. Check the spelling.`;
-    } else {
-      text.textContent = 'Could not reach the account check right now. If the face shows their real skin, the name is right.';
+    const found = res.found === true ? res.name : name;
+    card.dataset.name = found;
+    card.querySelector('.slot').innerHTML = `<img class="face" src="https://mc-heads.net/avatar/${encodeURIComponent(found)}/64" data-player="${esc(found)}" data-try="0" alt="">`;
+    c.root.querySelector('#p-pick-name').textContent = found;
+    if (res.found === false) {
+      msg.textContent = `There is no Minecraft Java account called ${name}. Check the spelling.`;
+      return;
     }
+    msg.textContent = res.found === true ? '1 account found:' : 'Could not confirm the account right now. Use it if the head shows their real skin:';
+    card.hidden = false;
+  }
+  function pick(c) {
+    const name = c.root.querySelector('#p-pick').dataset.name;
+    c.root.querySelector('#p-mc').value = name;
+    const nameField = c.root.querySelector('#p-name');
+    if (!nameField.value.trim()) nameField.value = name;
+    c.root.querySelector('#p-lookup-msg').textContent = `${name} is filled in. Press "${c.editing ? 'Save player' : 'Add player'}" to keep it.`;
+    c.root.querySelector('#p-pick').hidden = true;
   }
   function wireFace(c) {
     const input = c.root.querySelector('#p-face');
