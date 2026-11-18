@@ -5,7 +5,7 @@ import { Renderer } from './renderer.js';
 import { computeRoute, PORTAL_JUMP_SECONDS } from './route.js';
 import { loadData, saveData, prefs, saved } from './store.js';
 import { getToken } from './github.js';
-import { DOT_TYPES, escapeHtml as esc, fuzzyScore, parseCoordinates, formatTime, formatBlocks, ordinal, uid, matte } from './util.js';
+import { DOT_TYPES, escapeHtml as esc, fuzzyScore, parseCoordinates, formatTime, formatBlocks, formatY, ordinal, uid, matte } from './util.js';
 import { initEditor } from './editor.js';
 
 const $ = (id) => document.getElementById(id);
@@ -57,7 +57,21 @@ const displayName = (d) => (d.type === 'portal' ? `${d.name} (${dimName(d.dim)})
 
 // With several dimensions shown, dimensions with a ratio (Nether 1:8) are stretched to Overworld scale.
 const scaleFor = (dimId) => (S.visibleDims.size > 1 ? dimById(dimId)?.ratio || 1 : 1);
-const displayPos = (p) => { const s = scaleFor(p.dim); return { x: p.x * s, y: p.y, z: p.z * s }; };
+// A dot whose height is unknown is drawn on the Y = 0 floor.
+const displayPos = (p) => { const s = scaleFor(p.dim); return { x: p.x * s, y: p.y ?? 0, z: p.z * s }; };
+
+// Checking or unchecking dimensions can change the scale (Nether alone: Nether blocks; together with others: Overworld blocks).
+// The camera is converted with it, so you keep looking at the same place instead of jumping away.
+const frameRatio = (set) => (set.size === 1 ? dimById([...set][0])?.ratio || 1 : 1);
+function setVisibleDims(next) {
+  const k = frameRatio(S.visibleDims) / frameRatio(next);
+  if (k !== 1) {
+    cam.target = { x: cam.target.x * k, y: cam.target.y, z: cam.target.z * k };
+    cam.viewSize = Math.min(4e6, Math.max(2, cam.viewSize * k));
+    anim = null;
+  }
+  S.visibleDims = next;
+}
 
 const isShown = (d) => S.visibleDims.has(d.dim) && S.types.has(d.type) && (S.players.size === 0 || S.players.has(d.finder));
 
@@ -71,9 +85,12 @@ const FACE_SOURCES = [
   (n) => `https://mc-heads.net/avatar/${encodeURIComponent(n)}/64`,
   (n) => `https://minotar.net/helm/${encodeURIComponent(n)}/64.png`,
 ];
+// A player's face: an uploaded face picture, else the Minecraft (Java) account's head, else the default head.
 function faceImg(name) {
-  if (!name) return `<img class="face" src="${DEFAULT_HEAD}" alt="">`;
-  return `<img class="face" src="${esc(FACE_SOURCES[0](name))}" data-player="${esc(name)}" data-try="0" alt="${esc(name)}">`;
+  const p = name ? S.data.players.find((x) => x.name === name) : null;
+  if (p && p.face) return `<img class="face" src="${esc(pictureSrc(p.face))}" data-fallback-head="1" alt="${esc(name)}">`;
+  if (p && p.minecraft) return `<img class="face" src="${esc(FACE_SOURCES[0](p.minecraft))}" data-player="${esc(p.minecraft)}" data-try="0" alt="${esc(name)}">`;
+  return `<img class="face" src="${DEFAULT_HEAD}" alt="">`;
 }
 const pictureSrc = (path) => S.pictureCache.get(path) || path;
 function pictureImg(d) {
@@ -87,6 +104,7 @@ document.addEventListener('error', (e) => {
   if (img.classList.contains('face')) {
     const next = Number(img.dataset.try || 0) + 1;
     img.dataset.try = next;
+    if (img.src === DEFAULT_HEAD) return;
     img.src = next < FACE_SOURCES.length && img.dataset.player ? FACE_SOURCES[next](img.dataset.player) : DEFAULT_HEAD;
   } else if (img.dataset.fallback !== undefined && !img.classList.contains('default-pic')) {
     img.classList.add('default-pic');
@@ -102,7 +120,8 @@ function buildScene() {
     dark: S.dark,
     gridMode: S.grid,
     gridColors: visible.length > 1 ? visible.map((d) => d.color) : [],
-    axisColor: ow ? ow.color : '#39e07a',
+    // Axes take the colour of the checked dimension; with several (or none) checked they use the default Overworld green.
+    axisColor: visible.length === 1 ? visible[0].color : ow ? ow.color : '#39e07a',
     dots: S.worldId ? worldDots().filter(isShown).map((d) => ({
       id: d.id, pos: displayPos(d), color: dimById(d.dim)?.color || '#cccccc', type: d.type,
       label: displayName(d), unlinked: d.type === 'portal' && !partnerOf(d),
@@ -130,9 +149,16 @@ function tick(now) {
   if (dirty && S.data) {
     dirty = false;
     renderer.draw(buildScene());
+    updateViewSize();
     if (!$('compass-panel').hidden) drawCompasses();
   }
   requestAnimationFrame(tick);
+}
+
+const fmtBlocks = (n) => (n >= 100 ? Math.round(n).toLocaleString('en-US') : n >= 10 ? n.toFixed(0) : n.toFixed(1));
+function updateViewSize() {
+  const v = renderer.visibleSize();
+  $('view-size').textContent = `View: ${fmtBlocks(v.w)} × ${fmtBlocks(v.h)} blocks · grid square ${v.grid}`;
 }
 
 const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
@@ -215,12 +241,13 @@ function dotCardHTML(d, { pinned = false, linked = false } = {}) {
   return `<div class="tip dot-card">
     ${linked ? '<span class="kind">Linked portal</span>' : ''}
     <div class="head"><span class="name">${esc(displayName(d))}</span>${pinned && !linked ? '<button class="btn close-btn" type="button" data-act="close-left" aria-label="Close">X</button>' : ''}</div>
-    <span class="coords" style="color:${dimColor(d.dim)}">X ${d.x} · Y ${d.y} · Z ${d.z} · ${esc(dim?.name || d.dim)}</span>
+    <span class="coords" style="color:${dimColor(d.dim)}">X ${d.x} · Y ${formatY(d.y)} · Z ${d.z} · ${esc(dim?.name || d.dim)}</span>
     ${unlinked ? '<span class="kind" style="color:#ff6b6b">Unlinked portal: not used for routes</span>' : ''}
     <div class="row">
       <div class="finder"><div class="slot">${faceImg(d.finder)}</div><span>${esc(d.finder || 'Unknown')}</span></div>
       <div class="slot pic">${pictureImg(d)}</div>
     </div>
+    ${d.comment ? `<p class="comment">${esc(d.comment)}</p>` : ''}
     ${owner ? `<div class="actions">${linked ? '' : `<button class="btn small" type="button" data-act="edit-dot" data-id="${d.id}">Edit</button>`}<button class="btn small red" type="button" data-act="delete-dot" data-id="${d.id}">Delete${linked ? ' this portal' : ''}</button></div>` : ''}
   </div>`;
 }
@@ -284,7 +311,7 @@ leftEl.addEventListener('click', (e) => {
 function goToDot(id) {
   const d = dotById(id);
   if (!d) return;
-  S.visibleDims.add(d.dim);
+  if (!S.visibleDims.has(d.dim)) setVisibleDims(new Set([...S.visibleDims, d.dim]));
   S.types.add(d.type);
   if (S.players.size && !S.players.has(d.finder)) S.players.clear();
   renderChecks();
@@ -307,7 +334,7 @@ function runSearch() {
   const top = items.slice(0, 25);
   const rows = top.map(({ d, p }) => {
     if (d) {
-      return `<button class="list-item" type="button" data-dot="${d.id}"><span class="txt"><span>${esc(displayName(d))}</span><small style="color:${dimColor(d.dim)}">${d.x}, ${d.y}, ${d.z} · ${esc(dimName(d.dim))}</small></span><span class="slot thumb">${pictureImg(d)}</span></button>`;
+      return `<button class="list-item" type="button" data-dot="${d.id}"><span class="txt"><span>${esc(displayName(d))}</span><small style="color:${dimColor(d.dim)}">${d.x}, ${formatY(d.y)}, ${d.z} · ${esc(dimName(d.dim))}</small></span><span class="slot thumb">${pictureImg(d)}</span></button>`;
     }
     const n = worldDots().filter((x) => x.finder === p.name).length;
     return `<button class="list-item" type="button" data-player-pick="${esc(p.name)}"><span class="slot face-slot">${faceImg(p.name)}</span><span class="txt" style="flex:1"><span>${esc(p.name)}</span><small class="muted">Player · ${n} dot${n === 1 ? '' : 's'} found</small></span></button>`;
@@ -358,7 +385,7 @@ function openSaved(tab) {
   let body;
   if (tab === 'locations') {
     const list = s.locations.map(dotById).filter(Boolean);
-    body = list.map((d) => `<div class="list-item" role="button" tabindex="0" data-dot="${d.id}"><span class="txt"><span>${esc(displayName(d))}</span><small style="color:${dimColor(d.dim)}">${d.x}, ${d.y}, ${d.z} · ${esc(dimName(d.dim))}</small></span><button class="btn small" type="button" data-act="unsave-loc" data-id="${d.id}" aria-label="Remove ${esc(displayName(d))}">X</button></div>`).join('')
+    body = list.map((d) => `<div class="list-item" role="button" tabindex="0" data-dot="${d.id}"><span class="txt"><span>${esc(displayName(d))}</span><small style="color:${dimColor(d.dim)}">${d.x}, ${formatY(d.y)}, ${d.z} · ${esc(dimName(d.dim))}</small></span><button class="btn small" type="button" data-act="unsave-loc" data-id="${d.id}" aria-label="Remove ${esc(displayName(d))}">X</button></div>`).join('')
       || '<div class="empty">No saved locations yet. Search for a dot and press the star next to the search bar.</div>';
   } else {
     body = s.routes.map((r) => `<div class="list-item" role="button" tabindex="0" data-route="${r.id}"><span class="txt"><span>${esc(r.name)}</span><small class="muted">${esc(r.start)} to ${esc(r.dest)}</small></span><span style="display:flex;gap:4px"><button class="btn small" type="button" data-act="rename-route" data-id="${r.id}">Rename</button><button class="btn small" type="button" data-act="delete-route" data-id="${r.id}" aria-label="Delete ${esc(r.name)}">X</button></span></div>`).join('')
@@ -403,7 +430,9 @@ $('dim-list').addEventListener('click', (e) => {
   const b = e.target.closest('[data-dim]');
   if (!b) return;
   const id = b.dataset.dim;
-  if (S.visibleDims.has(id)) S.visibleDims.delete(id); else S.visibleDims.add(id);
+  const next = new Set(S.visibleDims);
+  if (next.has(id)) next.delete(id); else next.add(id);
+  setVisibleDims(next);
   renderChecks(); dirty = true;
 });
 $('type-list').addEventListener('click', (e) => {

@@ -10,6 +10,9 @@ function normalise(data) {
   for (const key of ['dimensions', 'worlds', 'players', 'transports', 'terrains', 'dots']) {
     if (!Array.isArray(data[key])) data[key] = [];
   }
+  // Players: name = how you know them (e.g. Discord name), minecraft = Java username for the face (optional),
+  // face = uploaded face picture (optional). Older files only had a name, which was the Minecraft name.
+  data.players = data.players.map((p) => ({ name: p.name, minecraft: p.minecraft ?? p.name, face: p.face || null }));
   return data;
 }
 

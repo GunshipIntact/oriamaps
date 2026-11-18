@@ -33,7 +33,7 @@ Visitors can only look and plan routes. To change anything you sign in with a Gi
 1. On github.com click your profile picture → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
 2. Name it `OriaMaps`. Pick an expiration (up to a year; you then make a new one).
 3. **Repository access → Only select repositories →** `oriamaps`.
-4. **Permissions → Repository permissions → Contents → Read and write.**
+4. Scroll down to **Permissions** and click **+ Add permissions**. In the list that opens, tick **Contents**. Then, next to Contents, change the access from **Read-only** to **Read and write**. (Metadata: Read-only is added by itself; that is fine.)
 5. Click **Generate token** and copy it right away (GitHub only shows it once).
 6. On OriaMaps click **Owner sign in** (bottom of the blue sidebar), paste the key and press **Sign in**.
 
@@ -44,11 +44,14 @@ The key stays only in that browser. Never send it to anyone. If it leaks, delete
 After signing in, the **Owner tools** bar appears at the bottom of the screen:
 
 - **+ World**: create, rename or delete worlds (name and optional seed). Start here; dots need a world.
-- **+ Dot**: add a dot. Pick the dimension and type, the player who found it, and a picture.
+- **+ Dot**: add a dot. Pick the dimension and type, the player who found it, a picture and an optional comment.
+  Coordinates can be written `x y z`, `x, y, z` or `x/y/z`. If the height is unknown, write only `x z`.
   For a **Portal** you also enter the linked portal's dimension and coordinates (or link an existing portal, or save it as unlinked).
 - **Click a dot** on the map to open its panel on the left. There you can **Edit** or **Delete** it.
 - **+ Dimension**: add or change dimensions (name, ratio, lowest/highest Y, colour).
-- **Players**: add or remove Java usernames. Faces load automatically.
+- **Players**: add people by the name you know them by (for example their Discord name). Fill in their Minecraft Java
+  username to load their face automatically, or upload a face picture. With neither, a default head is shown.
+  Renaming a player also renames them on all their dots.
 - **Transport**: add or change transport methods and their speeds.
 
 Every change is saved straight into this repository. Everyone sees it within about a minute
@@ -70,6 +73,12 @@ Every change is saved straight into this repository. Everyone sees it within abo
 - Escape closes the left panel and windows.
 - The map is drawn with the site's own code (no 3D library), so nothing extra has to be downloaded.
 - A tag in `index.html` asks search engines not to list the site.
+- The view-size readout (bottom left) also shows the size of one grid square.
+- Axis numbers far away are skipped when the perspective would squeeze them together.
+- When checking or unchecking dimensions changes the scale (for example Nether alone vs. Nether with Overworld),
+  the camera is converted so you keep looking at the same place.
+- A dot whose height is unknown is drawn on the Y = 0 floor, shows "Y ?", and routes ignore the height difference for it.
+- The first world is called "Oria"; rename it any time with + World.
 
 ## Testing a copy with sample data
 

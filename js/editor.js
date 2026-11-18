@@ -28,8 +28,8 @@ export function initEditor(app) {
       return false;
     }
   }
-  async function uploadPicture(file, baseName) {
-    const blob = await shrinkPicture(file);
+  async function uploadPicture(file, baseName, maxSize = 1280) {
+    const blob = await shrinkPicture(file, maxSize);
     const path = `pictures/${slugify(baseName)}-${Date.now().toString(36)}.jpg`;
     await writeFile(path, await blobToBase64(blob), `Add picture ${path}`);
     S.pictureCache.set(path, URL.createObjectURL(blob)); // shows at once, before GitHub Pages updates
@@ -98,6 +98,7 @@ export function initEditor(app) {
   function choiceButtons(items, selected, attr, disabled = () => false) {
     return items.map((it) => `<button class="btn small ${it.id === selected ? 'on' : ''}" type="button" data-${attr}="${esc(it.id)}" ${disabled(it) ? 'disabled' : ''}>${it.icon ? `<img src="${esc(it.icon)}" alt="" width="16" height="16" class="pixel">` : ''}${esc(it.name)}</button>`).join('');
   }
+  const xyzText = (d) => (d.y === null || d.y === undefined ? `${d.x}, ${d.z}` : `${d.x}, ${d.y}, ${d.z}`);
   const limitsText = (dimId) => { const d = app.dimById(dimId); return d ? `${d.name}: Y must be between ${d.minY} and ${d.maxY}.` : ''; };
 
   function editDot(id) {
@@ -117,13 +118,14 @@ export function initEditor(app) {
 
     const m = app.openModal(`<div class="head"><h2>${dot ? 'Edit dot' : 'Add dot'}</h2><button class="btn close-btn" type="button" data-close aria-label="Close">X</button></div>
       <div class="row"><label for="dot-name">Name</label><input id="dot-name" class="field" type="text" placeholder="e.g. Iron Farm" value="${esc(dot?.name || '')}"></div>
-      <div class="row"><label for="dot-xyz">Coordinates</label><input id="dot-xyz" class="field" type="text" placeholder="e.g. 120, 64, -340" value="${dot ? `${dot.x}, ${dot.y}, ${dot.z}` : ''}"><span class="hint" id="dot-limits"></span></div>
+      <div class="row"><label for="dot-xyz">Coordinates</label><input id="dot-xyz" class="field" type="text" placeholder="e.g. 120, 64, -340" value="${dot ? xyzText(dot) : ''}"><span class="hint"><span id="dot-limits"></span> Height unknown? Write only X and Z, e.g. 1970, -2213.</span></div>
       <div class="row"><span class="lbl">Dimension</span><div class="choices" id="dot-dims"></div></div>
       <div class="row"><span class="lbl">Type</span><div class="choices grid3" id="dot-types">${DOT_TYPES.map((t) => `<button class="btn small" type="button" data-type="${t.id}">${t.single}</button>`).join('')}</div></div>
       <div class="cols">
         <div class="row"><label for="dot-finder">Discovered by</label><select id="dot-finder" class="field"><option value="">Unknown</option>${players.map((n) => `<option ${dot?.finder === n ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select><span class="hint">Picked from the Players list.</span></div>
         <div class="row"><span class="lbl">Location picture</span><div class="pic-row"><div class="slot" id="dot-pic">${dot ? app.pictureImg(dot) : ''}</div><label class="btn small" for="dot-file">Choose</label><input id="dot-file" type="file" accept="image/*" hidden></div>${dot?.picture ? '<button class="btn small" type="button" id="dot-nopic" style="align-self:flex-start">Remove picture</button>' : '<span class="hint">No picture? The dimension\'s block is shown instead.</span>'}</div>
       </div>
+      <div class="row"><label for="dot-comment">Comment (optional)</label><textarea id="dot-comment" class="field" rows="3" placeholder="e.g. Directly above the End portal">${esc(dot?.comment || '')}</textarea></div>
       <div id="portal-part"></div>
       <div class="err" hidden></div>
       <div class="foot"><button class="btn" type="button" data-close>Cancel</button><button class="btn green" type="button" data-ok>${dot ? 'Save changes' : 'Create dot'}</button></div>`);
@@ -149,7 +151,7 @@ export function initEditor(app) {
       let inner = '';
       if (st.mode === 'new' || st.mode === 'partner') {
         inner = `<div class="row"><span class="lbl">Partner's dimension</span><div class="choices" id="dot-pdims">${choiceButtons(app.dims(), st.pdim, 'pdim', (d) => d.id === st.dim)}</div><span class="hint">Must be a different dimension from this portal. ${esc(limitsText(st.pdim))}</span></div>
-          <div class="cols"><div class="row"><label for="dot-pxyz">Partner's coordinates</label><input id="dot-pxyz" class="field" type="text" placeholder="e.g. 15, 70, -42" value="${partner ? `${partner.x}, ${partner.y}, ${partner.z}` : esc(st.pxyz || '')}"></div>
+          <div class="cols"><div class="row"><label for="dot-pxyz">Partner's coordinates</label><input id="dot-pxyz" class="field" type="text" placeholder="e.g. 15, 70, -42" value="${partner ? xyzText(partner) : esc(st.pxyz || '')}"></div>
           <div class="row"><span class="lbl">Partner's picture</span><div class="pic-row"><div class="slot" id="dot-ppic">${partner ? app.pictureImg(partner) : ''}</div><label class="btn small" for="dot-pfile">Choose</label><input id="dot-pfile" type="file" accept="image/*" hidden></div></div></div>
           <span class="hint">Name, finder and type are shared with the partner. It only gets its own coordinates and picture.</span>`;
       } else if (st.mode === 'existing') {
@@ -177,14 +179,14 @@ export function initEditor(app) {
     renderTop();
 
     const fail = (text) => { const err = q('.err'); err.textContent = text; err.hidden = false; return null; };
-    const inLimits = (dimId, c) => { const d = app.dimById(dimId); return !d || (c.y >= d.minY && c.y <= d.maxY); };
+    const inLimits = (dimId, c) => { const d = app.dimById(dimId); return !d || c.y === null || (c.y >= d.minY && c.y <= d.maxY); };
 
     q('[data-ok]').addEventListener('click', async () => {
       q('.err').hidden = true;
       const name = q('#dot-name').value.trim();
       if (!name) return fail('Give the dot a name.');
       const c = parseDotCoordinates(q('#dot-xyz').value);
-      if (!c) return fail('Write the coordinates as three whole numbers, e.g. 120, 64, -340.');
+      if (!c) return fail('Write the coordinates as whole numbers: x y z, x, y, z or x/y/z (e.g. 120, 64, -340). If the height is unknown, write only x and z.');
       if (!inLimits(st.dim, c)) return fail(limitsText(st.dim));
       const keepPartner = st.type === 'portal' && st.mode === 'partner' ? partner : null;
       const linkExisting = st.type === 'portal' && st.mode === 'existing' ? app.dotById(q('#dot-existing')?.value) : null;
@@ -194,7 +196,7 @@ export function initEditor(app) {
       if (st.type === 'portal' && (st.mode === 'new' || st.mode === 'partner')) {
         if (!st.pdim || st.pdim === st.dim) return fail('Pick a different dimension for the partner portal.');
         pc = parseDotCoordinates(q('#dot-pxyz').value);
-        if (!pc) return fail("Write the partner's coordinates as three whole numbers, e.g. 15, 70, -42.");
+        if (!pc) return fail("Write the partner's coordinates as whole numbers, e.g. 15, 70, -42 (or only x and z if the height is unknown).");
         if (!inLimits(st.pdim, pc)) return fail(limitsText(st.pdim));
       }
       if (st.type === 'portal' && st.mode === 'existing' && !linkExisting) return fail('Pick the portal to link with.');
@@ -206,7 +208,8 @@ export function initEditor(app) {
         const target = dot || { id: uid('dot'), world: S.worldId };
         let picture = st.removePic ? null : target.picture || null;
         if (st.file) picture = await uploadPicture(st.file, `${name}-${st.dim}`);
-        Object.assign(target, { name, dim: st.dim, x: c.x, y: c.y, z: c.z, type: st.type, finder, picture });
+        const comment = q('#dot-comment').value.trim();
+        Object.assign(target, { name, dim: st.dim, x: c.x, y: c.y, z: c.z, type: st.type, finder, picture, comment });
         if (!dot) S.data.dots.push(target);
 
         // Old partner that is no longer wanted becomes an unlinked portal.
@@ -257,7 +260,7 @@ export function initEditor(app) {
       root: m.root, close: m.close,
       fail: (t) => { err.textContent = t; err.hidden = false; return false; },
       clear: () => { err.hidden = true; },
-      rerender: () => { body.innerHTML = render(ctx); },
+      rerender: () => { body.innerHTML = render(ctx); if (ctx.editing) body.querySelector('form')?.scrollIntoView({ block: 'nearest' }); },
       editing: null,
     };
     m.root.addEventListener('click', (e) => onClick && onClick(e, ctx));
@@ -373,19 +376,31 @@ export function initEditor(app) {
   }
 
   // ---------- Players ----------
+  // name = how you know them (e.g. their Discord name). The face comes from the Minecraft (Java) username
+  // if one is filled in, otherwise from an uploaded face picture, otherwise a default head is shown.
   function openPlayers() {
-    listWindow({
+    const ctx = listWindow({
       title: 'Players',
-      intro: 'Java Edition usernames. Faces are loaded automatically from the username.',
-      render: () => `<table><tr><th></th><th>Username</th><th>Dots</th><th></th></tr>${S.data.players.map((p) => `<tr><td style="width:40px"><div class="slot" style="width:32px;height:32px">${app.faceImg(p.name)}</div></td><td>${esc(p.name)}</td><td>${S.data.dots.filter((d) => d.finder === p.name).length}</td>
-          <td class="acts"><button class="btn small red" type="button" data-pdel="${esc(p.name)}">Remove</button></td></tr>`).join('') || '<tr><td colspan="4" class="hint">No players yet.</td></tr>'}</table>
-          <form class="row" style="gap:8px"><label for="p-name">Add a player</label><div style="display:flex;gap:8px"><input id="p-name" name="name" class="field" placeholder="e.g. Oriamx"><button class="btn green" type="submit">Add</button></div></form>`,
+      intro: 'Name is how you know the player (for example their Discord name). Add their Minecraft Java username to load their face automatically, or upload a face picture. With neither, a default head is shown.',
+      render: (c) => {
+        const p = c.editing ? S.data.players.find((x) => x.name === c.editing) : null;
+        return `<table><tr><th></th><th>Name</th><th>Minecraft account</th><th>Dots</th><th></th></tr>${S.data.players.map((x) => `<tr><td style="width:40px"><div class="slot" style="width:32px;height:32px">${app.faceImg(x.name)}</div></td><td>${esc(x.name)}</td><td>${x.minecraft ? esc(x.minecraft) : x.face ? '<span class="hint">face picture</span>' : '<span class="hint">none (default head)</span>'}</td><td>${S.data.dots.filter((d) => d.finder === x.name).length}</td>
+          <td class="acts"><button class="btn small" type="button" data-pedit="${esc(x.name)}">Edit</button> <button class="btn small red" type="button" data-pdel="${esc(x.name)}">Remove</button></td></tr>`).join('') || '<tr><td colspan="5" class="hint">No players yet.</td></tr>'}</table>
+          <form class="row" style="gap:8px"><span class="lbl" style="font-size:17px">${p ? `Edit ${esc(p.name)}` : 'Add a player'}</span>
+          <div class="cols"><div class="row"><label for="p-name">Name</label><input id="p-name" name="name" class="field" placeholder="e.g. Pixelfuchs" value="${esc(p?.name || '')}"></div>
+          <div class="row"><label for="p-mc">Minecraft Java username (optional)</label><input id="p-mc" name="minecraft" class="field" placeholder="e.g. Pixelfox5" value="${esc(p?.minecraft || '')}"></div></div>
+          <div class="row"><span class="lbl">Face picture (optional, used when there is no Minecraft username)</span><div class="pic-row"><label class="btn small" for="p-face">Choose</label><input id="p-face" name="face" type="file" accept="image/*" hidden><span class="hint" id="p-face-name">${p?.face ? 'A face picture is saved.' : 'No picture chosen.'}</span></div>
+          ${p?.face ? '<label class="hint"><input type="checkbox" name="noface"> Remove the saved face picture</label>' : ''}</div>
+          <div class="foot">${p ? '<button class="btn" type="button" data-pcancel>Cancel edit</button>' : ''}<button class="btn green" type="submit">${p ? 'Save player' : 'Add player'}</button></div></form>`;
+      },
       onClick: async (e, c) => {
-        const b = e.target.closest('[data-pdel]');
+        const b = e.target.closest('[data-pedit],[data-pdel],[data-pcancel]');
         if (!b) return;
+        if (b.dataset.pedit) { c.editing = b.dataset.pedit; c.rerender(); return wireFace(c); }
+        if (b.dataset.pcancel !== undefined) { c.editing = null; c.rerender(); return wireFace(c); }
         const name = b.dataset.pdel;
         c.close();
-        if (!(await app.confirmDialog(`Remove ${name} from the Players list? Their dots keep showing their name.`, 'Remove'))) return openPlayers();
+        if (!(await app.confirmDialog(`Remove ${name} from the Players list? Their dots keep showing their name with a default head.`, 'Remove'))) return openPlayers();
         S.data.players = S.data.players.filter((p) => p.name !== name);
         app.refreshAll();
         await save(`Remove player ${name}`);
@@ -393,14 +408,34 @@ export function initEditor(app) {
       },
       onSubmit: async (fd, c) => {
         const name = String(fd.get('name') || '').trim();
-        if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) return c.fail('A Java username has 3 to 16 letters, numbers or underscores.');
-        if (S.data.players.some((p) => p.name.toLowerCase() === name.toLowerCase())) return c.fail(`${name} is already on the list.`);
-        S.data.players.push({ name });
+        const minecraft = String(fd.get('minecraft') || '').trim();
+        const file = fd.get('face');
+        if (!name) return c.fail('Give the player a name.');
+        if (minecraft && !/^[A-Za-z0-9_]{3,16}$/.test(minecraft)) return c.fail('A Java username has 3 to 16 letters, numbers or underscores.');
+        if (S.data.players.some((p) => p.name !== c.editing && p.name.toLowerCase() === name.toLowerCase())) return c.fail(`${name} is already on the list.`);
+        let face;
+        if (file && file.size) {
+          try { face = await uploadPicture(file, `face-${name}`, 256); } catch (e) { return c.fail(`Could not upload the face picture: ${e.message}`); }
+        }
+        if (c.editing) {
+          const p = S.data.players.find((x) => x.name === c.editing);
+          if (p.name !== name) S.data.dots.forEach((d) => { if (d.finder === p.name) d.finder = name; });
+          Object.assign(p, { name, minecraft, face: face || (fd.get('noface') ? null : p.face) });
+        } else {
+          S.data.players.push({ name, minecraft, face: face || null });
+        }
+        c.editing = null;
         c.rerender();
+        wireFace(c);
         app.refreshAll();
-        await save(`Add player ${name}`);
+        await save(`Save player ${name}`);
       },
     });
+    wireFace(ctx);
+  }
+  function wireFace(c) {
+    const input = c.root.querySelector('#p-face');
+    if (input) input.addEventListener('change', () => { c.root.querySelector('#p-face-name').textContent = input.files[0] ? input.files[0].name : 'No picture chosen.'; });
   }
 
   // ---------- Transport methods ----------

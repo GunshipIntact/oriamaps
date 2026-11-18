@@ -1,43 +1,513 @@
 {
   "version": 1,
   "dimensions": [
-    { "id": "overworld", "name": "Overworld", "ratio": 1, "minY": -64, "maxY": 320, "color": "#39e07a", "icon": "assets/icons/dim-overworld.png", "note": "" },
-    { "id": "nether", "name": "Nether", "ratio": 8, "minY": 0, "maxY": 256, "color": "#ff4a4a", "icon": "assets/icons/dim-nether.png", "note": "1st layer below the bedrock roof: Y 0 to 125" },
-    { "id": "end", "name": "End", "ratio": 1, "minY": 0, "maxY": 256, "color": "#6a5cff", "icon": "assets/icons/dim-end.png", "note": "" }
+    {
+      "id": "overworld",
+      "name": "Overworld",
+      "ratio": 1,
+      "minY": -64,
+      "maxY": 320,
+      "color": "#39e07a",
+      "icon": "assets/icons/dim-overworld.png",
+      "note": ""
+    },
+    {
+      "id": "nether",
+      "name": "Nether",
+      "ratio": 8,
+      "minY": 0,
+      "maxY": 256,
+      "color": "#ff4a4a",
+      "icon": "assets/icons/dim-nether.png",
+      "note": "1st layer below the bedrock roof: Y 0 to 125"
+    },
+    {
+      "id": "end",
+      "name": "End",
+      "ratio": 1,
+      "minY": 0,
+      "maxY": 256,
+      "color": "#3f6fff",
+      "icon": "assets/icons/dim-end.png",
+      "note": ""
+    }
   ],
-  "worlds": [],
+  "worlds": [
+    {
+      "id": "oria",
+      "name": "Oria",
+      "seed": ""
+    }
+  ],
   "players": [
-    { "name": "Oriamx" },
-    { "name": "ErsatzSilver" },
-    { "name": "ME_Eifersucht" },
-    { "name": "Pixelfox5" },
-    { "name": "Forhaut123" },
-    { "name": "Lollettex" },
-    { "name": "Im_Melissa" },
-    { "name": "turtex" },
-    { "name": "patsusama" },
-    { "name": "8hiny" },
-    { "name": "Yen_Nhi" },
-    { "name": "Ba5id" },
-    { "name": "Patsuma" }
+    {
+      "name": "Oriamx",
+      "minecraft": "Oriamx",
+      "face": null
+    },
+    {
+      "name": "ErsatzSilver",
+      "minecraft": "ErsatzSilver",
+      "face": null
+    },
+    {
+      "name": "ME_Eifersucht",
+      "minecraft": "ME_Eifersucht",
+      "face": null
+    },
+    {
+      "name": "Pixelfox5",
+      "minecraft": "Pixelfox5",
+      "face": null
+    },
+    {
+      "name": "Forhaut123",
+      "minecraft": "Forhaut123",
+      "face": null
+    },
+    {
+      "name": "Lollettex",
+      "minecraft": "Lollettex",
+      "face": null
+    },
+    {
+      "name": "Im_Melissa",
+      "minecraft": "Im_Melissa",
+      "face": null
+    },
+    {
+      "name": "turtex",
+      "minecraft": "turtex",
+      "face": null
+    },
+    {
+      "name": "patsusama",
+      "minecraft": "patsusama",
+      "face": null
+    },
+    {
+      "name": "8hiny",
+      "minecraft": "8hiny",
+      "face": null
+    },
+    {
+      "name": "Yen_Nhi",
+      "minecraft": "Yen_Nhi",
+      "face": null
+    },
+    {
+      "name": "Ba5id",
+      "minecraft": "Ba5id",
+      "face": null
+    },
+    {
+      "name": "Patsuma",
+      "minecraft": "Patsuma",
+      "face": null
+    },
+    {
+      "name": "Pixelfuchs",
+      "minecraft": "",
+      "face": null
+    },
+    {
+      "name": "Jaron",
+      "minecraft": "",
+      "face": null
+    },
+    {
+      "name": "Forhaut",
+      "minecraft": "",
+      "face": null
+    },
+    {
+      "name": "Eifersucht",
+      "minecraft": "",
+      "face": null
+    },
+    {
+      "name": "Brickmister69",
+      "minecraft": "",
+      "face": null
+    }
   ],
   "transports": [
-    { "id": "boat-ice", "name": "Boat", "condition": "Flat blue ice", "speed": 72.73 },
-    { "id": "elytra", "name": "Elytra", "condition": "Gliding at 0° pitch", "speed": 30.0 },
-    { "id": "horse", "name": "Horse", "condition": "Flat terrain (average breed)", "speed": 9.49 },
-    { "id": "minecart", "name": "Minecart", "condition": "Powered track", "speed": 8.0 },
-    { "id": "boat-water", "name": "Boat", "condition": "Flat water", "speed": 8.0 },
-    { "id": "donkey", "name": "Donkey", "condition": "Flat terrain (naturally spawned)", "speed": 7.56 },
-    { "id": "sprint-jump", "name": "Sprint-jumping", "condition": "Flat terrain", "speed": 7.127 },
-    { "id": "walk", "name": "Walking", "condition": "Flat terrain", "speed": 4.317 },
-    { "id": "happy-ghast", "name": "Happy Ghast", "condition": "Flying at 0° pitch", "speed": 3.611 }
+    {
+      "id": "boat-ice",
+      "name": "Boat",
+      "condition": "Flat blue ice",
+      "speed": 72.73
+    },
+    {
+      "id": "elytra",
+      "name": "Elytra",
+      "condition": "Gliding at 0° pitch",
+      "speed": 30.0
+    },
+    {
+      "id": "horse",
+      "name": "Horse",
+      "condition": "Flat terrain (average breed)",
+      "speed": 9.49
+    },
+    {
+      "id": "minecart",
+      "name": "Minecart",
+      "condition": "Powered track",
+      "speed": 8.0
+    },
+    {
+      "id": "boat-water",
+      "name": "Boat",
+      "condition": "Flat water",
+      "speed": 8.0
+    },
+    {
+      "id": "donkey",
+      "name": "Donkey",
+      "condition": "Flat terrain (naturally spawned)",
+      "speed": 7.56
+    },
+    {
+      "id": "sprint-jump",
+      "name": "Sprint-jumping",
+      "condition": "Flat terrain",
+      "speed": 7.127
+    },
+    {
+      "id": "walk",
+      "name": "Walking",
+      "condition": "Flat terrain",
+      "speed": 4.317
+    },
+    {
+      "id": "happy-ghast",
+      "name": "Happy Ghast",
+      "condition": "Flying at 0° pitch",
+      "speed": 3.611
+    }
   ],
   "terrains": [
-    { "id": "none", "name": "No difficulty", "mult": 1 },
-    { "id": "slightly", "name": "Slightly", "mult": 1.5 },
-    { "id": "tricky", "name": "Tricky terrain", "mult": 2 },
-    { "id": "rough", "name": "Rough terrain", "mult": 3 },
-    { "id": "difficult", "name": "Difficult terrain", "mult": 4 }
+    {
+      "id": "none",
+      "name": "No difficulty",
+      "mult": 1
+    },
+    {
+      "id": "slightly",
+      "name": "Slightly",
+      "mult": 1.5
+    },
+    {
+      "id": "tricky",
+      "name": "Tricky terrain",
+      "mult": 2
+    },
+    {
+      "id": "rough",
+      "name": "Rough terrain",
+      "mult": 3
+    },
+    {
+      "id": "difficult",
+      "name": "Difficult terrain",
+      "mult": 4
+    }
   ],
-  "dots": []
+  "dots": [
+    {
+      "id": "dot-spawn-area",
+      "world": "oria",
+      "name": "spawn area",
+      "dim": "overworld",
+      "x": -228,
+      "y": 98,
+      "z": -466,
+      "type": "landmark",
+      "finder": "Pixelfuchs",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-lush-cave",
+      "world": "oria",
+      "name": "Lush cave",
+      "dim": "overworld",
+      "x": -215,
+      "y": 32,
+      "z": -865,
+      "type": "biome",
+      "finder": "Jaron",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-lush-cave-2",
+      "world": "oria",
+      "name": "Lush cave 2",
+      "dim": "overworld",
+      "x": 335,
+      "y": 6,
+      "z": -657,
+      "type": "biome",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-jungle",
+      "world": "oria",
+      "name": "jungle",
+      "dim": "overworld",
+      "x": 1970,
+      "y": null,
+      "z": -2213,
+      "type": "biome",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-badlands",
+      "world": "oria",
+      "name": "badlands",
+      "dim": "overworld",
+      "x": 2192,
+      "y": null,
+      "z": -2901,
+      "type": "biome",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-dessert",
+      "world": "oria",
+      "name": "dessert",
+      "dim": "overworld",
+      "x": 2720,
+      "y": null,
+      "z": -3242,
+      "type": "biome",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-sulfur-cave",
+      "world": "oria",
+      "name": "sulfur cave",
+      "dim": "overworld",
+      "x": 1657,
+      "y": null,
+      "z": -881,
+      "type": "biome",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-zombiespawner",
+      "world": "oria",
+      "name": "zombiespawner",
+      "dim": "overworld",
+      "x": 1044,
+      "y": -25,
+      "z": -829,
+      "type": "farm",
+      "finder": "Forhaut",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-villager-breeder",
+      "world": "oria",
+      "name": "villager breeder",
+      "dim": "overworld",
+      "x": 1175,
+      "y": 70,
+      "z": -944,
+      "type": "farm",
+      "finder": "Eifersucht",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-cobble-gen",
+      "world": "oria",
+      "name": "cobble gen",
+      "dim": "overworld",
+      "x": 1230,
+      "y": 80,
+      "z": -950,
+      "type": "farm",
+      "finder": "Eifersucht",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-trail-chamber",
+      "world": "oria",
+      "name": "Trail chamber",
+      "dim": "overworld",
+      "x": 1260,
+      "y": 68,
+      "z": -1293,
+      "type": "dungeon",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-end-portal",
+      "world": "oria",
+      "name": "End Portal",
+      "dim": "overworld",
+      "x": -117,
+      "y": -14,
+      "z": -1722,
+      "type": "dungeon",
+      "finder": "Brickmister69",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-ocean-monument",
+      "world": "oria",
+      "name": "ocean monument",
+      "dim": "overworld",
+      "x": 100,
+      "y": 50,
+      "z": 300,
+      "type": "dungeon",
+      "finder": "Eifersucht",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-nether-fortress",
+      "world": "oria",
+      "name": "Nether Fortress",
+      "dim": "nether",
+      "x": -1211,
+      "y": 73,
+      "z": -1406,
+      "type": "dungeon",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-bees",
+      "world": "oria",
+      "name": "bees",
+      "dim": "overworld",
+      "x": 1909,
+      "y": null,
+      "z": -2497,
+      "type": "misc",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-skelet-spawner",
+      "world": "oria",
+      "name": "skelet spawner",
+      "dim": "overworld",
+      "x": 1272,
+      "y": -6,
+      "z": -1222,
+      "type": "misc",
+      "finder": "Pixelfuchs",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-spinnenspawner",
+      "world": "oria",
+      "name": "spinnenspawner",
+      "dim": "overworld",
+      "x": 1049,
+      "y": 15,
+      "z": -892,
+      "type": "misc",
+      "finder": "Eifersucht",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-zuk-nftige-lava-farm",
+      "world": "oria",
+      "name": "(Zukünftige) Lava Farm",
+      "dim": "overworld",
+      "x": 923,
+      "y": -55,
+      "z": -467,
+      "type": "misc",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-blaze-spawner",
+      "world": "oria",
+      "name": "Blaze Spawner",
+      "dim": "nether",
+      "x": -1320,
+      "y": 70,
+      "z": -1444,
+      "type": "misc",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    },
+    {
+      "id": "dot-spider-spawner",
+      "world": "oria",
+      "name": "spider spawner",
+      "dim": "overworld",
+      "x": -96,
+      "y": 20,
+      "z": -1712,
+      "type": "misc",
+      "finder": "Brickmister69",
+      "picture": null,
+      "link": null,
+      "comment": "Direkt über dem Endportal"
+    },
+    {
+      "id": "dot-spawn-nether-portal",
+      "world": "oria",
+      "name": "Spawn nether portal",
+      "dim": "nether",
+      "x": -19,
+      "y": 128,
+      "z": -62,
+      "type": "portal",
+      "finder": "Oriamx",
+      "picture": null,
+      "link": null,
+      "comment": ""
+    }
+  ]
 }

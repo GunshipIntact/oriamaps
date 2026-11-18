@@ -7,6 +7,7 @@ const FOV = (60 * Math.PI) / 180;
 const TAN = Math.tan(FOV / 2);
 const DOT_PX = 11; // dots keep this size on screen at every zoom
 const LABEL_FONT = '15px Minecraft, "Pixelify Sans", monospace';
+const TICK_FONT = '12px Minecraft, "Pixelify Sans", monospace';
 
 const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y, z: a.z + b.z });
 const sub = (a, b) => ({ x: a.x - b.x, y: a.y - b.y, z: a.z - b.z });
@@ -297,7 +298,7 @@ export class Renderer {
     const colors = scene.gridColors && scene.gridColors.length > 1 ? scene.gridColors.map((c) => (scene.dark ? c : matte(c))) : null;
     const neutral = scene.dark ? '#8fb3c9' : '#4f6676';
     const lattice = scene.gridMode === '3d' && cam.mode === '3d';
-    let N = lattice ? 4 : 12;
+    let N = lattice ? 6 : 24; // how many grid squares reach out from the centre
     if (cam.mode === '2d') N = Math.ceil((cam.viewSize * (cam.w / cam.h)) / step / 2) + 2;
     const cx = Math.round(cam.target.x / step) * step;
     const cz = Math.round(cam.target.z / step) * step;
@@ -353,7 +354,7 @@ export class Renderer {
         for (let i = 0; i < 18; i++) { const mid = (lo + hi) / 2; if (inside(cam.project(mul(v, mid)))) lo = mid; else hi = mid; }
         L = lo;
       }
-      return { to: mul(v, L), label };
+      return { to: mul(v, L), label, v, L };
     }).filter((a) => Math.abs(a.to.x) + Math.abs(a.to.y) + Math.abs(a.to.z) > cam.viewSize * 0.02);
     ctx.save();
     ctx.lineWidth = 3;
@@ -384,11 +385,71 @@ export class Renderer {
       if (scene.dark) ctx.shadowBlur = 6;
     }
     ctx.restore();
+    this.drawTicks(axes, col, scene.dark);
     const o = cam.project(O);
     if (o) {
       ctx.fillStyle = scene.dark ? '#fff' : '#222';
       ctx.fillRect(o.x - 3, o.y - 3, 6, 6);
     }
+  }
+
+  // Numbers along each axis, so you can read the scale. Spacing grows with zoom so labels never crowd.
+  tickStep(v, L) {
+    const cam = this.cam;
+    let step = this.gridStep();
+    const at = (d) => cam.project(mul(v, d));
+    for (let i = 0; i < 40; i++) {
+      const a = at(Math.min(step, L * 0.5)), b = at(Math.min(step, L * 0.5) + step);
+      if (a && b && Math.hypot(b.x - a.x, b.y - a.y) >= 64) return step;
+      step *= 2;
+    }
+    return step;
+  }
+
+  drawTicks(axes, col, dark) {
+    const { ctx, cam } = this;
+    ctx.save();
+    ctx.font = TICK_FONT;
+    ctx.textAlign = 'center';
+    ctx.lineWidth = 2;
+    for (const a of axes) {
+      const s = cam.segment({ x: 0, y: 0, z: 0 }, a.to);
+      if (!s) continue;
+      const len = Math.hypot(s[1].x - s[0].x, s[1].y - s[0].y) || 1;
+      const ux = (s[1].x - s[0].x) / len, uy = (s[1].y - s[0].y) / len;
+      let px = -uy, py = ux;
+      if (py < 0 || (Math.abs(py) < 0.2 && px < 0)) { px = -px; py = -py; } // labels below / right of the axis
+      const step = this.tickStep(a.v, a.L);
+      const sign = a.v.x + a.v.y + a.v.z;
+      let count = 0, last = { x: s[0].x, y: s[0].y };
+      for (let d = step; d < a.L * 0.9 && count < 80; d += step, count++) {
+        const p = cam.project(mul(a.v, d));
+        if (!p) continue;
+        // Far away the perspective squeezes the ticks together: skip any that would crowd the previous one.
+        if (Math.hypot(p.x - last.x, p.y - last.y) < 48) continue;
+        last = p;
+        ctx.strokeStyle = col;
+        ctx.beginPath();
+        ctx.moveTo(p.x - px * 5, p.y - py * 5);
+        ctx.lineTo(p.x + px * 5, p.y + py * 5);
+        ctx.stroke();
+        const text = String(sign * d);
+        const lx = p.x + px * 16, ly = p.y + py * 16 + 4;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = dark ? '#000' : '#fff';
+        ctx.strokeText(text, lx, ly);
+        ctx.fillStyle = col;
+        ctx.fillText(text, lx, ly);
+        ctx.lineWidth = 2;
+      }
+    }
+    ctx.restore();
+  }
+
+  // How much of the world is visible: width and height in blocks at the centre of the screen.
+  visibleSize() {
+    const h = this.cam.viewSize;
+    return { w: h * (this.cam.w / this.cam.h), h, grid: this.gridStep() };
   }
 
   drawRoute(scene) {
