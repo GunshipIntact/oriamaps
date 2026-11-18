@@ -33,7 +33,11 @@ Visitors can only look and plan routes. To change anything you sign in with a Gi
 1. On github.com click your profile picture → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
 2. Name it `OriaMaps`. Pick an expiration (up to a year; you then make a new one).
 3. **Repository access → Only select repositories →** `oriamaps`.
-4. Scroll down to **Permissions** and click **+ Add permissions**. In the list that opens, tick **Contents**. Then, next to Contents, change the access from **Read-only** to **Read and write**. (Metadata: Read-only is added by itself; that is fine.)
+4. Scroll down to **Permissions**. There are two boxes, **Repositories** and **Account**, each with its own **+ Add permissions** button.
+   Use the button in the **Repositories** box (the Account list has things like "Followers" and "Email addresses" and no Contents).
+   Tick **Contents**, close the list, and next to Contents change **Read-only** to **Read and write**.
+   (If there is no Repositories box, step 3 is set to "Public repositories"; change it to "Only select repositories".)
+   An existing key can be fixed the same way: open it in the Fine-grained tokens list and click **Edit**.
 5. Click **Generate token** and copy it right away (GitHub only shows it once).
 6. On OriaMaps click **Owner sign in** (bottom of the blue sidebar), paste the key and press **Sign in**.
 
@@ -51,6 +55,7 @@ After signing in, the **Owner tools** bar appears at the bottom of the screen:
 - **+ Dimension**: add or change dimensions (name, ratio, lowest/highest Y, colour).
 - **Players**: add people by the name you know them by (for example their Discord name). Fill in their Minecraft Java
   username to load their face automatically, or upload a face picture. With neither, a default head is shown.
+  Press **Look up** next to the Minecraft username to see their face and check that the account exists.
   Renaming a player also renames them on all their dots.
 - **Transport**: add or change transport methods and their speeds.
 
@@ -77,7 +82,8 @@ Every change is saved straight into this repository. Everyone sees it within abo
 - Axis numbers far away are skipped when the perspective would squeeze them together.
 - When checking or unchecking dimensions changes the scale (for example Nether alone vs. Nether with Overworld),
   the camera is converted so you keep looking at the same place.
-- A dot whose height is unknown is drawn on the Y = 0 floor, shows "Y ?", and routes ignore the height difference for it.
+- A dot whose height is unknown is drawn on the Y = 0 floor, shows "Y ?" and a yellow "!", and routes ignore the height difference for it.
+- Signing in checks that the key can really change files, so a key without "Contents: Read and write" is refused right away.
 - The first world is called "Oria"; rename it any time with + World.
 
 ## Testing a copy with sample data

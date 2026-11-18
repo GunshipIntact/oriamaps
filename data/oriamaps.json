@@ -51,21 +51,6 @@
       "face": null
     },
     {
-      "name": "ME_Eifersucht",
-      "minecraft": "ME_Eifersucht",
-      "face": null
-    },
-    {
-      "name": "Pixelfox5",
-      "minecraft": "Pixelfox5",
-      "face": null
-    },
-    {
-      "name": "Forhaut123",
-      "minecraft": "Forhaut123",
-      "face": null
-    },
-    {
       "name": "Lollettex",
       "minecraft": "Lollettex",
       "face": null
@@ -107,7 +92,7 @@
     },
     {
       "name": "Pixelfuchs",
-      "minecraft": "",
+      "minecraft": "Pixelfox5",
       "face": null
     },
     {
@@ -117,12 +102,12 @@
     },
     {
       "name": "Forhaut",
-      "minecraft": "",
+      "minecraft": "Forhaut123",
       "face": null
     },
     {
       "name": "Eifersucht",
-      "minecraft": "",
+      "minecraft": "ME_Eifersucht",
       "face": null
     },
     {

@@ -1,7 +1,7 @@
 // OriaMaps – owner tools. Only shown after the owner signs in with their GitHub key.
 // Every change is written straight into the repository, so all visitors see it about a minute later.
 
-import { getToken, setToken, clearToken, verifyToken, writeFile, blobToBase64, shrinkPicture, REPO } from './github.js';
+import { getToken, setToken, clearToken, verifyToken, writeFile, blobToBase64, shrinkPicture, REPO, NO_WRITE_HELP } from './github.js';
 import { loadData } from './store.js';
 import { DOT_TYPES, escapeHtml as esc, slugify, uid, parseDotCoordinates } from './util.js';
 
@@ -24,7 +24,8 @@ export function initEditor(app) {
       return true;
     } catch (e) {
       setStatus('Not saved yet', true);
-      app.toast(`Could not save to GitHub: ${e.message}. Your change is still on this page; press Retry save.`, 8000);
+      const why = e.status === 403 ? NO_WRITE_HELP : `${e.message}.`;
+      app.toast(`Could not save to GitHub. ${why} Your change is still on this page; press Retry save afterwards.`, 12000);
       return false;
     }
   }
@@ -53,7 +54,8 @@ export function initEditor(app) {
       err.hidden = true;
       m.root.querySelector('[data-ok]').disabled = true;
       try {
-        if (!(await verifyToken(token))) throw new Error(`This key can't change the ${REPO.repo} repository. Check that "Contents" is set to "Read and write".`);
+        const check = await verifyToken(token);
+        if (!check.ok) throw new Error(check.reason === 'contents' ? NO_WRITE_HELP : `This GitHub account can't change the ${REPO.repo} repository.`);
         setToken(token);
         S.owner = true;
         S.data = await loadData();
@@ -79,12 +81,12 @@ export function initEditor(app) {
 
   // A stored key that GitHub no longer accepts is removed.
   if (S.owner) {
-    verifyToken(getToken()).then((ok) => {
-      if (!ok) throw Object.assign(new Error('no push'), { status: 403 });
+    verifyToken(getToken()).then((check) => {
+      if (!check.ok) throw Object.assign(new Error(check.reason), { status: 403, reason: check.reason });
     }).catch((e) => {
       if (e.status === 401 || e.status === 403 || e.status === 404) {
         clearToken(); S.owner = false; app.refreshAll();
-        app.toast('Your owner key no longer works. Sign in again with a new GitHub key.', 7000);
+        app.toast(e.reason === 'contents' ? NO_WRITE_HELP : 'Your owner key no longer works. Sign in again with a new GitHub key.', 12000);
       }
     });
   }
@@ -388,12 +390,14 @@ export function initEditor(app) {
           <td class="acts"><button class="btn small" type="button" data-pedit="${esc(x.name)}">Edit</button> <button class="btn small red" type="button" data-pdel="${esc(x.name)}">Remove</button></td></tr>`).join('') || '<tr><td colspan="5" class="hint">No players yet.</td></tr>'}</table>
           <form class="row" style="gap:8px"><span class="lbl" style="font-size:17px">${p ? `Edit ${esc(p.name)}` : 'Add a player'}</span>
           <div class="cols"><div class="row"><label for="p-name">Name</label><input id="p-name" name="name" class="field" placeholder="e.g. Pixelfuchs" value="${esc(p?.name || '')}"></div>
-          <div class="row"><label for="p-mc">Minecraft Java username (optional)</label><input id="p-mc" name="minecraft" class="field" placeholder="e.g. Pixelfox5" value="${esc(p?.minecraft || '')}"></div></div>
+          <div class="row"><label for="p-mc">Minecraft Java username (optional)</label><div style="display:flex;gap:6px"><input id="p-mc" name="minecraft" class="field" placeholder="e.g. Pixelfox5" value="${esc(p?.minecraft || '')}"><button class="btn small" type="button" data-plookup style="height:36px">Look up</button></div></div></div>
+          <div class="pic-row" id="p-lookup" hidden><div class="slot" style="width:48px;height:48px"></div><span class="hint"></span></div>
           <div class="row"><span class="lbl">Face picture (optional, used when there is no Minecraft username)</span><div class="pic-row"><label class="btn small" for="p-face">Choose</label><input id="p-face" name="face" type="file" accept="image/*" hidden><span class="hint" id="p-face-name">${p?.face ? 'A face picture is saved.' : 'No picture chosen.'}</span></div>
           ${p?.face ? '<label class="hint"><input type="checkbox" name="noface"> Remove the saved face picture</label>' : ''}</div>
           <div class="foot">${p ? '<button class="btn" type="button" data-pcancel>Cancel edit</button>' : ''}<button class="btn green" type="submit">${p ? 'Save player' : 'Add player'}</button></div></form>`;
       },
       onClick: async (e, c) => {
+        if (e.target.closest('[data-plookup]')) return lookUp(c);
         const b = e.target.closest('[data-pedit],[data-pdel],[data-pcancel]');
         if (!b) return;
         if (b.dataset.pedit) { c.editing = b.dataset.pedit; c.rerender(); return wireFace(c); }
@@ -432,6 +436,49 @@ export function initEditor(app) {
       },
     });
     wireFace(ctx);
+  }
+  // Search a Minecraft Java username: shows the face and checks that the account exists.
+  async function lookupMinecraft(name) {
+    const sources = [
+      async () => {
+        const r = await fetch(`https://api.ashcon.app/mojang/v2/user/${encodeURIComponent(name)}`);
+        if (r.status === 404 || r.status === 400) return { found: false };
+        if (!r.ok) throw new Error(String(r.status));
+        const j = await r.json();
+        return { found: true, name: j.username };
+      },
+      async () => {
+        const r = await fetch(`https://playerdb.co/api/player/minecraft/${encodeURIComponent(name)}`);
+        const j = await r.json();
+        if (j.success && j.data && j.data.player) return { found: true, name: j.data.player.username };
+        if (String(j.code || '').startsWith('minecraft.')) return { found: false };
+        throw new Error('no answer');
+      },
+    ];
+    for (const source of sources) {
+      try { return await source(); } catch { /* try the next service */ }
+    }
+    return { found: null };
+  }
+  async function lookUp(c) {
+    const input = c.root.querySelector('#p-mc');
+    const box = c.root.querySelector('#p-lookup');
+    const name = input.value.trim();
+    if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) return c.fail('Type a Minecraft Java username first (3 to 16 letters, numbers or underscores).');
+    c.clear();
+    box.hidden = false;
+    box.querySelector('.slot').innerHTML = `<img class="face" src="https://mc-heads.net/avatar/${encodeURIComponent(name)}/64" data-player="${esc(name)}" data-try="0" alt="">`;
+    const text = box.querySelector('.hint');
+    text.textContent = 'Checking…';
+    const res = await lookupMinecraft(name);
+    if (res.found === true) {
+      input.value = res.name;
+      text.textContent = `Found the Minecraft account ${res.name}. Check that the face looks right, then save.`;
+    } else if (res.found === false) {
+      text.textContent = `There is no Minecraft Java account called ${name}. Check the spelling.`;
+    } else {
+      text.textContent = 'Could not reach the account check right now. If the face shows their real skin, the name is right.';
+    }
   }
   function wireFace(c) {
     const input = c.root.querySelector('#p-face');

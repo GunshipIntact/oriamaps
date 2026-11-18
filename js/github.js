@@ -39,11 +39,26 @@ async function gh(path, opts = {}, token = getToken()) {
 
 const contentsPath = (path) => `/repos/${REPO.owner}/${REPO.repo}/contents/${path.split('/').map(encodeURIComponent).join('/')}`;
 
-// Checks that the token may write to the repository.
+// Checks that the key may really change files. GitHub reports the account's rights on the repository,
+// not the key's, so a harmless test write is tried: it names a wrong file version on purpose, which GitHub
+// refuses with 409 (allowed, nothing changed) or 403 (key lacks "Contents: Read and write").
 export async function verifyToken(token) {
   const info = await gh(`/repos/${REPO.owner}/${REPO.repo}`, {}, token);
-  return Boolean(info.permissions && info.permissions.push);
+  if (!(info.permissions && info.permissions.push)) return { ok: false, reason: 'account' };
+  try {
+    await gh(contentsPath('data/oriamaps.json'), {
+      method: 'PUT',
+      body: JSON.stringify({ message: 'OriaMaps access check (never saved)', content: btoa('check'), sha: '0'.repeat(40), branch: REPO.branch }),
+    }, token);
+    return { ok: true }; // not expected, the wrong version is always refused
+  } catch (e) {
+    if (e.status === 409 || e.status === 422) return { ok: true };
+    if (e.status === 403 || e.status === 404) return { ok: false, reason: 'contents' };
+    throw e;
+  }
 }
+
+export const NO_WRITE_HELP = 'This GitHub key is not allowed to change files. On GitHub, edit the key: under Permissions → Repositories, add "Contents" and set it to "Read and write". Then sign in again.';
 
 export function utf8ToBase64(text) {
   const bytes = new TextEncoder().encode(text);

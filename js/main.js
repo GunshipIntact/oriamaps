@@ -124,7 +124,7 @@ function buildScene() {
     axisColor: visible.length === 1 ? visible[0].color : ow ? ow.color : '#39e07a',
     dots: S.worldId ? worldDots().filter(isShown).map((d) => ({
       id: d.id, pos: displayPos(d), color: dimById(d.dim)?.color || '#cccccc', type: d.type,
-      label: displayName(d), unlinked: d.type === 'portal' && !partnerOf(d),
+      label: displayName(d), unlinked: d.type === 'portal' && !partnerOf(d), noY: d.y === null || d.y === undefined,
       selected: d.id === S.selectedId, hovered: d.id === S.hoverId,
     })) : [],
     route: routeSegments(),
@@ -243,6 +243,7 @@ function dotCardHTML(d, { pinned = false, linked = false } = {}) {
     <div class="head"><span class="name">${esc(displayName(d))}</span>${pinned && !linked ? '<button class="btn close-btn" type="button" data-act="close-left" aria-label="Close">X</button>' : ''}</div>
     <span class="coords" style="color:${dimColor(d.dim)}">X ${d.x} · Y ${formatY(d.y)} · Z ${d.z} · ${esc(dim?.name || d.dim)}</span>
     ${unlinked ? '<span class="kind" style="color:#ff6b6b">Unlinked portal: not used for routes</span>' : ''}
+    ${d.y === null || d.y === undefined ? '<span class="kind" style="color:#f2c200">Height (Y) unknown</span>' : ''}
     <div class="row">
       <div class="finder"><div class="slot">${faceImg(d.finder)}</div><span>${esc(d.finder || 'Unknown')}</span></div>
       <div class="slot pic">${pictureImg(d)}</div>
