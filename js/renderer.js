@@ -515,12 +515,17 @@ export class Renderer {
       ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
       ctx.fillStyle = d.selected ? (scene.dark ? '#ffd84a' : '#8a6a00') : scene.dark ? '#ffffff' : '#1d1d1d';
       ctx.fillText(d.label, p.x, rect.y + 14);
-      if (d.unlinked) {
-        const bx = p.x - 10, by = rect.y - 26;
+      // Warning marks above the name: red = unlinked portal, yellow = height (Y) unknown.
+      const marks = [];
+      if (d.unlinked) marks.push(['#c62828', '#ffffff']);
+      if (d.noY) marks.push(['#f2c200', '#2a1b00']);
+      marks.forEach(([bg, fg], i) => {
+        const cx = p.x + (i - (marks.length - 1) / 2) * 28;
+        const bx = cx - 10, by = rect.y - 26;
         ctx.fillStyle = '#000'; ctx.fillRect(bx - 2, by - 2, 24, 26);
-        ctx.fillStyle = '#c62828'; ctx.fillRect(bx, by, 20, 22);
-        ctx.fillStyle = '#fff'; ctx.fillText('!', p.x, by + 17);
-      }
+        ctx.fillStyle = bg; ctx.fillRect(bx, by, 20, 22);
+        ctx.fillStyle = fg; ctx.fillText('!', cx, by + 17);
+      });
     }
 
     // Corner brackets around the selected dot.
