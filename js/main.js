@@ -1,7 +1,7 @@
 // OriaMaps – main page logic: map interaction, search, panels, router, compass, sidebar.
 // Owner-only editing lives in editor.js.
 
-import { Renderer } from './renderer.js';
+import { Renderer, shapeIconURL } from './renderer.js';
 import { computeRoute, PORTAL_JUMP_SECONDS } from './route.js';
 import { loadData, saveData, prefs, saved } from './store.js';
 import { getToken } from './github.js';
@@ -124,7 +124,7 @@ function buildScene() {
     axisColor: visible.length === 1 ? visible[0].color : ow ? ow.color : '#39e07a',
     dots: S.worldId ? worldDots().filter(isShown).map((d) => ({
       id: d.id, pos: displayPos(d), color: dimById(d.dim)?.color || '#cccccc', type: d.type,
-      label: displayName(d), unlinked: d.type === 'portal' && !partnerOf(d), noY: d.y === null || d.y === undefined,
+      label: displayName(d), typeLabel: typeInfo(d.type).label, unlinked: d.type === 'portal' && !partnerOf(d), noY: d.y === null || d.y === undefined,
       selected: d.id === S.selectedId, hovered: d.id === S.hoverId,
     })) : [],
     route: routeSegments(),
@@ -143,8 +143,9 @@ function tick(now) {
   lastFrame = now;
   const f = (keys.has('w') ? 1 : 0) - (keys.has('s') ? 1 : 0);
   const r = (keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0);
-  const u = (keys.has(' ') ? 1 : 0) - (keys.has('shift') ? 1 : 0);
-  if (f || r || u) { cam.move(f, r, S.view === '3d' ? u : 0, dt); dirty = true; anim = null; }
+  const u = (keys.has(' ') ? 1 : 0) - (keys.has('ctrl') ? 1 : 0);
+  const boost = keys.has('shift') ? 2 : 1; // hold Shift to move twice as fast
+  if (f || r || u) { cam.move(f, r, S.view === '3d' ? u : 0, dt * boost); dirty = true; anim = null; }
   if (anim) { stepAnim(now); dirty = true; }
   if (dirty && S.data) {
     dirty = false;
@@ -218,6 +219,10 @@ canvas.addEventListener('wheel', (e) => {
   dirty = true;
 }, { passive: false });
 
+// Ctrl moves down. Browsers do not let a page block Ctrl + W (close tab), so while Ctrl is held
+// the browser asks "Leave site?" before closing, instead of closing the map by accident.
+const keyName = (e) => (e.key === 'Shift' ? 'shift' : e.key === 'Control' ? 'ctrl' : e.key.toLowerCase());
+const guardClose = (e) => { e.preventDefault(); e.returnValue = ''; };
 const typing = () => ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
@@ -226,11 +231,21 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (typing() || document.querySelector('.modal-back')) return;
-  const k = e.key === 'Shift' ? 'shift' : e.key.toLowerCase();
-  if (['w', 'a', 's', 'd', ' ', 'shift'].includes(k)) { keys.add(k); if (k === ' ') e.preventDefault(); }
+  const k = keyName(e);
+  if (['w', 'a', 's', 'd', ' ', 'shift', 'ctrl'].includes(k)) {
+    keys.add(k);
+    if (k === ' ') e.preventDefault();
+    if (k === 'ctrl') window.addEventListener('beforeunload', guardClose);
+  }
+  // Ctrl + A / S / D would select, save or bookmark the page: blocked while moving.
+  if (e.ctrlKey && ['a', 's', 'd'].includes(e.key.toLowerCase())) e.preventDefault();
 });
-window.addEventListener('keyup', (e) => keys.delete(e.key === 'Shift' ? 'shift' : e.key.toLowerCase()));
-window.addEventListener('blur', () => keys.clear());
+window.addEventListener('keyup', (e) => {
+  const k = keyName(e);
+  keys.delete(k);
+  if (k === 'ctrl') setTimeout(() => window.removeEventListener('beforeunload', guardClose), 300);
+});
+window.addEventListener('blur', () => { keys.clear(); window.removeEventListener('beforeunload', guardClose); });
 window.addEventListener('resize', () => { renderer.resize(); dirty = true; });
 
 // ---------- Dot cards ----------
@@ -240,7 +255,7 @@ function dotCardHTML(d, { pinned = false, linked = false } = {}) {
   const owner = pinned && S.owner;
   return `<div class="tip dot-card">
     ${linked ? '<span class="kind">Linked portal</span>' : ''}
-    <div class="head"><span class="name">${esc(displayName(d))}</span>${pinned && !linked ? '<button class="btn close-btn" type="button" data-act="close-left" aria-label="Close">X</button>' : ''}</div>
+    <div class="head"><span class="name">${esc(displayName(d))} <small class="type">(${esc(typeInfo(d.type).label)})</small></span>${pinned && !linked ? '<button class="btn close-btn" type="button" data-act="close-left" aria-label="Close">X</button>' : ''}</div>
     <span class="coords" style="color:${dimColor(d.dim)}">X ${d.x} · Y ${formatY(d.y)} · Z ${d.z} · ${esc(dim?.name || d.dim)}</span>
     ${unlinked ? '<span class="kind" style="color:#ff6b6b">Unlinked portal: not used for routes</span>' : ''}
     ${d.y === null || d.y === undefined ? '<span class="kind" style="color:#f2c200">Height (Y) unknown</span>' : ''}
@@ -335,7 +350,7 @@ function runSearch() {
   const top = items.slice(0, 25);
   const rows = top.map(({ d, p }) => {
     if (d) {
-      return `<button class="list-item" type="button" data-dot="${d.id}"><span class="txt"><span>${esc(displayName(d))}</span><small style="color:${dimColor(d.dim)}">${d.x}, ${formatY(d.y)}, ${d.z} · ${esc(dimName(d.dim))}</small></span><span class="slot thumb">${pictureImg(d)}</span></button>`;
+      return `<button class="list-item" type="button" data-dot="${d.id}"><span class="txt"><span>${esc(displayName(d))} <small class="type">(${esc(typeInfo(d.type).label)})</small></span><small style="color:${dimColor(d.dim)}">${d.x}, ${formatY(d.y)}, ${d.z} · ${esc(dimName(d.dim))}</small></span><span class="slot thumb">${pictureImg(d)}</span></button>`;
     }
     const n = worldDots().filter((x) => x.finder === p.name).length;
     return `<button class="list-item" type="button" data-player-pick="${esc(p.name)}"><span class="slot face-slot">${faceImg(p.name)}</span><span class="txt" style="flex:1"><span>${esc(p.name)}</span><small class="muted">Player · ${n} dot${n === 1 ? '' : 's'} found</small></span></button>`;
@@ -420,10 +435,13 @@ function openPlayers(focus) {
 $('players-btn').addEventListener('click', () => openPlayers());
 
 // ---------- Sidebar ----------
+const typeIcons = new Map();
+const typeIcon = (id) => { if (!typeIcons.has(id)) typeIcons.set(id, shapeIconURL(id)); return typeIcons.get(id); };
+
 function renderChecks() {
   if (!S.data) return;
   $('dim-list').innerHTML = dims().map((d) => `<button class="check" type="button" role="checkbox" aria-checked="${S.visibleDims.has(d.id)}" data-dim="${d.id}"><span class="box"></span>${d.icon ? `<img src="${esc(d.icon)}" alt="">` : ''}<span style="color:${S.dark ? d.color : '#ffffff'}">${esc(d.name)}</span></button>`).join('');
-  $('type-list').innerHTML = DOT_TYPES.map((t) => `<button class="check" type="button" role="checkbox" aria-checked="${S.types.has(t.id)}" data-type="${t.id}"><span class="box"></span>${t.label}</button>`).join('');
+  $('type-list').innerHTML = DOT_TYPES.map((t) => `<button class="check" type="button" role="checkbox" aria-checked="${S.types.has(t.id)}" data-type="${t.id}"><span class="box"></span><img class="shape-icon" src="${typeIcon(t.id)}" alt="">${t.label}</button>`).join('');
   document.querySelectorAll('#view-seg .btn').forEach((b) => b.classList.toggle('on', b.dataset.view === S.view));
   document.querySelectorAll('#grid-seg .btn').forEach((b) => b.classList.toggle('on', b.dataset.grid === S.grid));
 }

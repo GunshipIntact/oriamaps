@@ -8,6 +8,7 @@ const TAN = Math.tan(FOV / 2);
 const DOT_PX = 11; // dots keep this size on screen at every zoom
 const LABEL_FONT = '15px Minecraft, "Pixelify Sans", monospace';
 const TICK_FONT = '12px Minecraft, "Pixelify Sans", monospace';
+const TYPE_FONT = '11px Minecraft, "Pixelify Sans", monospace';
 
 const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y, z: a.z + b.z });
 const sub = (a, b) => ({ x: a.x - b.x, y: a.y - b.y, z: a.z - b.z });
@@ -224,6 +225,19 @@ function buildMeshes() {
 }
 
 const MESHES = buildMeshes();
+
+// Small picture of a dot shape, used next to the type toggles in the sidebar.
+export function shapeIconURL(type, color = '#f2f2f2', px = 20) {
+  const dpr = 2;
+  const c = document.createElement('canvas');
+  c.width = c.height = px * dpr;
+  const r = Object.create(Renderer.prototype);
+  r.ctx = c.getContext('2d');
+  r.ctx.scale(dpr, dpr);
+  r.cam = { mode: '2d', yaw: 0 };
+  r.drawShape({ type, color }, { x: px / 2, y: px / 2 }, ICON_BASIS, false, { size: px * 0.36, exactColor: true, noGlow: true });
+  return c.toDataURL();
+}
 const LIGHT = norm({ x: 0.35, y: 0.9, z: 0.45 });
 const ICON_BASIS = Camera.basisFor(0.65, 0.5); // fixed angle used for dots in the 2D view
 
@@ -343,19 +357,12 @@ export class Renderer {
       { v: { x: 0, y: 0, z: 1 }, label: '+Z South' },
     ];
     if (cam.mode === '3d') dirs.push({ v: { x: 0, y: 1, z: 0 }, label: '+Y Up' }, { v: { x: 0, y: -1, z: 0 }, label: '-Y' });
-    // Each arrow grows until its tip sits just inside the screen edge, so the axes never cut across the whole screen.
-    const o0 = cam.project(O);
-    const margin = 70;
-    const inside = (p) => p && p.x > margin && p.x < cam.w - margin && p.y > margin + 40 && p.y < cam.h - margin;
+    // Each arrow reaches to just inside the screen edge where its axis leaves the screen. This also works when
+    // 0 0 0 itself is off screen: the visible stretch of each axis is found first, then its far end becomes the tip.
     const axes = dirs.map(({ v, label }) => {
-      let L = cam.viewSize * 0.35;
-      if (inside(o0)) {
-        let lo = 0, hi = cam.viewSize * 4;
-        for (let i = 0; i < 18; i++) { const mid = (lo + hi) / 2; if (inside(cam.project(mul(v, mid)))) lo = mid; else hi = mid; }
-        L = lo;
-      }
-      return { to: mul(v, L), label, v, L };
-    }).filter((a) => Math.abs(a.to.x) + Math.abs(a.to.y) + Math.abs(a.to.z) > cam.viewSize * 0.02);
+      const r = this.axisRange(v);
+      return r ? { to: mul(v, r.t2), label, v, L: r.t2, t1: r.t1 } : null;
+    }).filter((a) => a && a.L - a.t1 > cam.viewSize * 0.02);
     ctx.save();
     ctx.lineWidth = 3;
     ctx.strokeStyle = col;
@@ -393,13 +400,36 @@ export class Renderer {
     }
   }
 
+  // Finds which stretch [t1, t2] of the axis ray (from 0 0 0 along v) is on screen, inside a small margin.
+  axisRange(v) {
+    const cam = this.cam;
+    const margin = 60;
+    const inside = (t) => {
+      const p = cam.project(mul(v, t));
+      return Boolean(p) && p.x > margin && p.x < cam.w - margin && p.y > margin && p.y < cam.h - margin;
+    };
+    const ts = [0];
+    for (let k = -40; k <= 6; k++) ts.push(cam.viewSize * Math.pow(2, k / 2)); // up to 8 × the view size
+    let i1 = -1, i2 = -1;
+    ts.forEach((t, i) => { if (inside(t)) { if (i1 < 0) i1 = i; i2 = i; } });
+    if (i1 < 0) return null;
+    const edge = (inT, outT) => { // binary search for where the axis crosses the screen edge
+      for (let i = 0; i < 30; i++) { const mid = (inT + outT) / 2; if (inside(mid)) inT = mid; else outT = mid; }
+      return inT;
+    };
+    const t2 = i2 === ts.length - 1 ? ts[i2] : edge(ts[i2], ts[i2 + 1]);
+    const t1 = i1 === 0 ? 0 : edge(ts[i1], ts[i1 - 1]);
+    return { t1, t2 };
+  }
+
   // Numbers along each axis, so you can read the scale. Spacing grows with zoom so labels never crowd.
-  tickStep(v, L) {
+  tickStep(v, t1, L) {
     const cam = this.cam;
     let step = this.gridStep();
     const at = (d) => cam.project(mul(v, d));
+    const mid = (t1 + L) / 2; // measured in the middle of the visible stretch
     for (let i = 0; i < 40; i++) {
-      const a = at(Math.min(step, L * 0.5)), b = at(Math.min(step, L * 0.5) + step);
+      const a = at(mid), b = at(mid + step);
       if (a && b && Math.hypot(b.x - a.x, b.y - a.y) >= 64) return step;
       step *= 2;
     }
@@ -419,10 +449,13 @@ export class Renderer {
       const ux = (s[1].x - s[0].x) / len, uy = (s[1].y - s[0].y) / len;
       let px = -uy, py = ux;
       if (py < 0 || (Math.abs(py) < 0.2 && px < 0)) { px = -px; py = -py; } // labels below / right of the axis
-      const step = this.tickStep(a.v, a.L);
+      const step = this.tickStep(a.v, a.t1, a.L);
       const sign = a.v.x + a.v.y + a.v.z;
-      let count = 0, last = { x: s[0].x, y: s[0].y };
-      for (let d = step; d < a.L * 0.9 && count < 80; d += step, count++) {
+      let count = 0, last = { x: -1e9, y: -1e9 };
+      const o = cam.project({ x: 0, y: 0, z: 0 });
+      if (o) last = o;
+      const first = Math.max(step, Math.ceil(a.t1 / step) * step);
+      for (let d = first; d < a.L - (a.L - a.t1) * 0.06 && count < 400; d += step, count++) {
         const p = cam.project(mul(a.v, d));
         if (!p) continue;
         // Far away the perspective squeezes the ticks together: skip any that would crowd the previous one.
@@ -506,15 +539,31 @@ export class Renderer {
     const placed = [];
     const order = [...list].sort((a, b) => (b.d.selected || b.d.hovered) - (a.d.selected || a.d.hovered) || a.p.d - b.p.d);
     for (const { d, p } of order) {
-      const w = ctx.measureText(d.label).width + 8;
+      // Name in normal size, the dot type after it in smaller letters, e.g. "Lush cave (Biomes)".
+      ctx.font = LABEL_FONT;
+      const nameW = ctx.measureText(d.label).width;
+      const typeText = d.typeLabel ? ` (${d.typeLabel})` : '';
+      ctx.font = TYPE_FONT;
+      const typeW = typeText ? ctx.measureText(typeText).width : 0;
+      const w = nameW + typeW + 8;
       const rect = { x: p.x - w / 2, y: p.y - DOT_PX * 1.6 - 20, w, h: 18 };
       const must = d.selected || d.hovered;
       if (!must && placed.some((r) => r.x < rect.x + rect.w && rect.x < r.x + r.w && r.y < rect.y + rect.h && rect.y < r.y + r.h)) continue;
       placed.push(rect);
       ctx.fillStyle = scene.dark ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.75)';
       ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-      ctx.fillStyle = d.selected ? (scene.dark ? '#ffd84a' : '#8a6a00') : scene.dark ? '#ffffff' : '#1d1d1d';
-      ctx.fillText(d.label, p.x, rect.y + 14);
+      const textColor = d.selected ? (scene.dark ? '#ffd84a' : '#8a6a00') : scene.dark ? '#ffffff' : '#1d1d1d';
+      ctx.textAlign = 'left';
+      ctx.font = LABEL_FONT;
+      ctx.fillStyle = textColor;
+      ctx.fillText(d.label, rect.x + 4, rect.y + 14);
+      if (typeText) {
+        ctx.font = TYPE_FONT;
+        ctx.fillStyle = scene.dark ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.6)';
+        ctx.fillText(typeText, rect.x + 4 + nameW, rect.y + 14);
+      }
+      ctx.textAlign = 'center';
+      ctx.font = LABEL_FONT;
       // Warning marks above the name: red = unlinked portal, yellow = height (Y) unknown.
       const marks = [];
       if (d.unlinked) marks.push(['#c62828', '#ffffff']);
@@ -546,10 +595,11 @@ export class Renderer {
     }
   }
 
-  drawShape(d, p, basis, dark) {
+  drawShape(d, p, basis, dark, opts = {}) {
     const { ctx } = this;
-    const base = dark ? d.color : matte(d.color);
-    if (dark) { // soft neon glow
+    const SIZE = opts.size || DOT_PX;
+    const base = opts.exactColor || dark ? d.color : matte(d.color);
+    if (dark && !opts.noGlow) { // soft neon glow
       const g = ctx.createRadialGradient(p.x, p.y, 2, p.x, p.y, DOT_PX * 2.2);
       g.addColorStop(0, rgba(base, 0.35)); g.addColorStop(1, rgba(base, 0));
       ctx.fillStyle = g;
@@ -559,9 +609,9 @@ export class Renderer {
     ctx.strokeStyle = dark ? '#000000' : 'rgba(0,0,0,0.65)';
     ctx.lineJoin = 'round';
     if (d.type === 'biome') {
-      const g = ctx.createRadialGradient(p.x - 4, p.y - 4, 1, p.x, p.y, DOT_PX * 1.05);
+      const g = ctx.createRadialGradient(p.x - 4, p.y - 4, 1, p.x, p.y, SIZE * 1.05);
       g.addColorStop(0, shade(base, 1.6)); g.addColorStop(1, shade(base, 0.6));
-      ctx.beginPath(); ctx.arc(p.x, p.y, DOT_PX * 1.05, 0, Math.PI * 2);
+      ctx.beginPath(); ctx.arc(p.x, p.y, SIZE * 1.05, 0, Math.PI * 2);
       ctx.fillStyle = g; ctx.fill(); ctx.stroke();
       return;
     }
@@ -572,7 +622,7 @@ export class Renderer {
     const { R, U, F } = basis;
     const pts = mesh.v.map((v) => {
       const r = rotateY(v, facingYaw);
-      return { x: p.x + dot(r, R) * DOT_PX, y: p.y - dot(r, U) * DOT_PX, z: dot(r, F) };
+      return { x: p.x + dot(r, R) * SIZE, y: p.y - dot(r, U) * SIZE, z: dot(r, F) };
     });
     const faces = mesh.f.map((f) => ({ f, depth: f.v.reduce((s, i) => s + pts[i].z, 0) / f.v.length + (f.glow ? -0.02 : 0) }));
     faces.sort((a, b) => b.depth - a.depth);

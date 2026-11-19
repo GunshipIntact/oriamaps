@@ -63,6 +63,20 @@ After signing in, the **Owner tools** bar appears at the bottom of the screen:
 Every change is saved straight into this repository. Everyone sees it within about a minute
 (their browser may need a refresh). If saving fails, the bar shows **Retry save**.
 
+## Controls
+
+| Action | How |
+|---|---|
+| Turn the view | Click on empty space and drag (the view turns around the point you grabbed) |
+| Move | W A S D (in the direction you are facing) |
+| Up / down | Space / Ctrl |
+| Move twice as fast | Hold Shift while moving |
+| Zoom | Mouse wheel (zooms toward the mouse pointer) |
+| Open a dot | Click it; hover for a quick look |
+
+Note: browsers never let a website block **Ctrl + W** (close tab). While Ctrl is held, OriaMaps asks the browser
+to show "Leave site?" first, so pressing W while going down does not close the map by accident.
+
 ## Things I added that were not in the description
 
 - A dashed line from each dot down (or up) to the Y = 0 floor, so you can see how high it is.
@@ -86,6 +100,10 @@ Every change is saved straight into this repository. Everyone sees it within abo
 - A dot whose height is unknown is drawn on the Y = 0 floor, shows "Y ?" and a yellow "!", and routes ignore the height difference for it.
 - Signing in checks that the key can really change files, so a key without "Contents: Read and write" is refused right away.
 - The first world is called "Oria"; rename it any time with + World.
+- The "Leave site?" safety question while Ctrl is held (see Controls).
+- Ctrl + A / S / D are blocked on the map, so moving down does not select, save or bookmark the page.
+- The site no longer loads a font from Google's servers (that would send every visitor's IP address to Google,
+  which German courts have found to break the GDPR). The Minecraft font is part of the site itself.
 
 ## Testing a copy with sample data
 
