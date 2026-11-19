@@ -105,15 +105,17 @@ body.light .field:focus-within, body.light input.field:focus { border-color: #00
 .check .box { width: 16px; height: 16px; flex: none; background: #1b1b1b; border: 2px solid #c6c6c6; display: flex; align-items: center; justify-content: center; }
 .check[aria-checked="true"] .box::after { content: ""; width: 8px; height: 8px; background: #ffffff; }
 .check img { width: 18px; height: 18px; image-rendering: pixelated; }
+.check img.shape-icon { width: 20px; height: 20px; image-rendering: auto; }
+small.type { font-size: 0.72em; opacity: 0.7; font-weight: 400; }
 
 /* ---------- Layout ---------- */
 .search-wrap { position: fixed; left: 16px; top: 16px; width: 380px; display: flex; gap: 8px; z-index: 20; }
 .search-field { height: 40px; flex: 1; }
 .left-panel { position: fixed; left: 16px; top: 68px; width: 380px; max-height: calc(100vh - 68px - 150px); overflow-y: auto; z-index: 19; display: flex; flex-direction: column; gap: 10px; scrollbar-width: thin; }
 
-.world-wrap { position: fixed; top: 12px; left: calc(50% - 90px); transform: translateX(-50%); z-index: 20; }
-.world-btn { height: 44px; font-size: 17px; min-width: 220px; }
-.menu { position: absolute; top: 46px; left: 0; min-width: 100%; display: flex; flex-direction: column; padding: 6px; gap: 4px; background: var(--tip-bg); border: 2px solid #5000ff; box-shadow: 0 0 0 2px #100010; }
+.world-wrap { position: fixed; top: 16px; right: 544px; z-index: 22; } /* next to the Starting point field */
+.world-btn { height: 36px; font-size: 15px; min-width: 180px; }
+.menu { position: absolute; top: 40px; right: 0; min-width: 100%; display: flex; flex-direction: column; padding: 6px; gap: 4px; background: var(--tip-bg); border: 2px solid #5000ff; box-shadow: 0 0 0 2px #100010; }
 .menu .btn { justify-content: flex-start; }
 .world-wrap:hover .menu.hover-open { display: flex !important; }
 
