@@ -493,6 +493,20 @@
       "picture": null,
       "link": null,
       "comment": ""
+    },
+    {
+      "id": "dot-mwnfo87d-m1hph",
+      "world": "oria",
+      "name": "Blaze Spawner 2",
+      "dim": "nether",
+      "x": 150,
+      "y": null,
+      "z": -1400,
+      "type": "misc",
+      "finder": "ErsatzSilver",
+      "picture": null,
+      "comment": "Ich und Felix haben versucht witherskulls zu farmen für 2 Stunden lol",
+      "link": null
     }
   ]
 }
