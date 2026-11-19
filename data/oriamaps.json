@@ -35,7 +35,7 @@
   "worlds": [
     {
       "id": "oria",
-      "name": "Oria",
+      "name": "Oriamax",
       "seed": ""
     }
   ],
@@ -127,7 +127,7 @@
       "id": "elytra",
       "name": "Elytra",
       "condition": "Gliding at 0° pitch",
-      "speed": 30.0
+      "speed": 30
     },
     {
       "id": "horse",
@@ -139,13 +139,13 @@
       "id": "minecart",
       "name": "Minecart",
       "condition": "Powered track",
-      "speed": 8.0
+      "speed": 8
     },
     {
       "id": "boat-water",
       "name": "Boat",
       "condition": "Flat water",
-      "speed": 8.0
+      "speed": 8
     },
     {
       "id": "donkey",
