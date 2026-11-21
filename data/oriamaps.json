@@ -796,6 +796,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqowlwn-zxa9q",
+      "world": "oria",
+      "name": "Weizen Farm",
+      "dim": "overworld",
+      "x": 1088,
+      "y": 70,
+      "z": -1031,
+      "type": "landmark",
+      "finder": "ErsatzSilver",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
