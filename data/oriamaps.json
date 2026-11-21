@@ -630,6 +630,33 @@
       "type": "portal",
       "finder": "Oriamx",
       "link": "dot-mwqnrruu-4ydwp"
+    },
+    {
+      "id": "dot-mwqnvfp8-clxxp",
+      "world": "oria",
+      "name": "Ancient City (Portal)",
+      "dim": "nether",
+      "x": -165,
+      "y": null,
+      "z": 124,
+      "type": "portal",
+      "finder": "Oriamx",
+      "picture": null,
+      "comment": "",
+      "link": "dot-mwqnvfp8-hugg8"
+    },
+    {
+      "id": "dot-mwqnvfp8-hugg8",
+      "world": "oria",
+      "picture": null,
+      "name": "Ancient City (Portal)",
+      "dim": "overworld",
+      "x": -1327,
+      "y": -40,
+      "z": 992,
+      "type": "portal",
+      "finder": "Oriamx",
+      "link": "dot-mwqnvfp8-clxxp"
     }
   ]
 }
