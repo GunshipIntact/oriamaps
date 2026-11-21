@@ -754,6 +754,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqosjm0-emudc",
+      "world": "oria",
+      "name": "Bamboo/ Sugarcane Farm",
+      "dim": "overworld",
+      "x": 1157,
+      "y": 63,
+      "z": -901,
+      "type": "farm",
+      "finder": "",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
