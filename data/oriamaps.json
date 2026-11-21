@@ -810,6 +810,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqp031n-7kbbq",
+      "world": "oria",
+      "name": "Gulag",
+      "dim": "overworld",
+      "x": 1026,
+      "y": 64,
+      "z": -934,
+      "type": "landmark",
+      "finder": "Forhaut",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
