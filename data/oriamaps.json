@@ -824,6 +824,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqp8nl0-oyuek",
+      "world": "oria",
+      "name": "Iron Farm",
+      "dim": "overworld",
+      "x": 984,
+      "y": 34,
+      "z": -930,
+      "type": "farm",
+      "finder": "Eifersucht",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
