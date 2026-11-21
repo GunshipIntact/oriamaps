@@ -535,6 +535,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqniru0-zxd6t",
+      "world": "oria",
+      "name": "Wasser Tempel",
+      "dim": "overworld",
+      "x": 233,
+      "y": 62,
+      "z": 407,
+      "type": "dungeon",
+      "finder": "Pixelfuchs",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
