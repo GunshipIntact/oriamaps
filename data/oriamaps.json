@@ -712,6 +712,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqoq1ex-3bl8f",
+      "world": "oria",
+      "name": "Xp Farm",
+      "dim": "overworld",
+      "x": 1141,
+      "y": 63,
+      "z": -910,
+      "type": "landmark",
+      "finder": "Oriamx",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
