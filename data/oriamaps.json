@@ -481,20 +481,6 @@
       "comment": "Direkt über dem Endportal"
     },
     {
-      "id": "dot-spawn-nether-portal",
-      "world": "oria",
-      "name": "Spawn nether portal",
-      "dim": "nether",
-      "x": -19,
-      "y": 128,
-      "z": -62,
-      "type": "portal",
-      "finder": "Oriamx",
-      "picture": null,
-      "link": null,
-      "comment": ""
-    },
-    {
       "id": "dot-mwnfo87d-m1hph",
       "world": "oria",
       "name": "Blaze Spawner 2",
