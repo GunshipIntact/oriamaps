@@ -684,6 +684,20 @@
       "type": "portal",
       "finder": "Oriamx",
       "link": "dot-mwqo56sx-a3lv7"
+    },
+    {
+      "id": "dot-mwqo83ax-q1fe2",
+      "world": "oria",
+      "name": "Desert Village",
+      "dim": "overworld",
+      "x": 2547,
+      "y": 64,
+      "z": -2996,
+      "type": "landmark",
+      "finder": "Brickmister69",
+      "picture": "pictures/desert-village-overworld-mwqo83cc.jpg",
+      "comment": "",
+      "link": null
     }
   ]
 }
