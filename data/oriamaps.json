@@ -768,6 +768,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqotxb0-a8qh7",
+      "world": "oria",
+      "name": "Sakura Tree (Denkmal geschützt)",
+      "dim": "overworld",
+      "x": 1147,
+      "y": 63,
+      "z": -976,
+      "type": "landmark",
+      "finder": "",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
