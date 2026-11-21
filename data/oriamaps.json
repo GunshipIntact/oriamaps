@@ -507,6 +507,20 @@
       "picture": null,
       "comment": "Ich und Felix haben versucht witherskulls zu farmen für 2 Stunden lol",
       "link": null
+    },
+    {
+      "id": "dot-mwqngou0-wont9",
+      "world": "oria",
+      "name": "Bedrock Loch (netherite Farm)",
+      "dim": "nether",
+      "x": 133,
+      "y": 122,
+      "z": -132,
+      "type": "farm",
+      "finder": "ErsatzSilver",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
