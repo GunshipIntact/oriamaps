@@ -603,6 +603,20 @@
       "type": "portal",
       "finder": "Brickmister69",
       "link": "dot-mwqnmm6e-2kusi"
+    },
+    {
+      "id": "dot-mwqnqh90-g58s7",
+      "world": "oria",
+      "name": "Sakura Spawn Building",
+      "dim": "overworld",
+      "x": -67,
+      "y": 110,
+      "z": -419,
+      "type": "landmark",
+      "finder": "Oriamx",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
