@@ -657,6 +657,33 @@
       "type": "portal",
       "finder": "Oriamx",
       "link": "dot-mwqnvfp8-clxxp"
+    },
+    {
+      "id": "dot-mwqo56sx-a3lv7",
+      "world": "oria",
+      "name": "Bad Lands (Portal)",
+      "dim": "overworld",
+      "x": 2485,
+      "y": 94,
+      "z": -2920,
+      "type": "portal",
+      "finder": "Oriamx",
+      "picture": "pictures/bad-lands-portal-overworld-mwqo56ug.jpg",
+      "comment": "",
+      "link": "dot-mwqo58em-i9mq2"
+    },
+    {
+      "id": "dot-mwqo58em-i9mq2",
+      "world": "oria",
+      "picture": null,
+      "name": "Bad Lands (Portal)",
+      "dim": "nether",
+      "x": 310,
+      "y": 129,
+      "z": -365,
+      "type": "portal",
+      "finder": "Oriamx",
+      "link": "dot-mwqo56sx-a3lv7"
     }
   ]
 }
