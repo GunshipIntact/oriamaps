@@ -576,6 +576,33 @@
       "type": "portal",
       "finder": "Brickmister69",
       "link": "dot-mwqnkjom-f263l"
+    },
+    {
+      "id": "dot-mwqnmm6e-2kusi",
+      "world": "oria",
+      "name": "Nether End Portal",
+      "dim": "nether",
+      "x": -22,
+      "y": 128,
+      "z": -217,
+      "type": "portal",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": "dot-mwqnmm6e-4zi9r"
+    },
+    {
+      "id": "dot-mwqnmm6e-4zi9r",
+      "world": "oria",
+      "picture": null,
+      "name": "Nether End Portal",
+      "dim": "overworld",
+      "x": -118,
+      "y": -13,
+      "z": -1719,
+      "type": "portal",
+      "finder": "Brickmister69",
+      "link": "dot-mwqnmm6e-2kusi"
     }
   ]
 }
