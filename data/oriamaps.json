@@ -838,6 +838,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqpan7h-092zs",
+      "world": "oria",
+      "name": "Nether Wart Farm",
+      "dim": "overworld",
+      "x": 1121,
+      "y": 68,
+      "z": -919,
+      "type": "farm",
+      "finder": "ErsatzSilver",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
