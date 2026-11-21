@@ -617,6 +617,33 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqnrruu-4ydwp",
+      "world": "oria",
+      "name": "Sakura Spawn building (Portal)",
+      "dim": "overworld",
+      "x": -74,
+      "y": 112,
+      "z": -418,
+      "type": "portal",
+      "finder": "Oriamx",
+      "picture": null,
+      "comment": "",
+      "link": "dot-mwqnrruv-q6ex8"
+    },
+    {
+      "id": "dot-mwqnrruv-q6ex8",
+      "world": "oria",
+      "picture": null,
+      "name": "Sakura Spawn building (Portal)",
+      "dim": "nether",
+      "x": -20,
+      "y": 129,
+      "z": -63,
+      "type": "portal",
+      "finder": "Oriamx",
+      "link": "dot-mwqnrruu-4ydwp"
     }
   ]
 }
