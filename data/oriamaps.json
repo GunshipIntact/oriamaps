@@ -698,6 +698,20 @@
       "picture": "pictures/desert-village-overworld-mwqo83cc.jpg",
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqokpbi-te13g",
+      "world": "oria",
+      "name": "Water hole",
+      "dim": "overworld",
+      "x": 1144,
+      "y": null,
+      "z": -925,
+      "type": "landmark",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
