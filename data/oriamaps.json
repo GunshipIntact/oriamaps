@@ -521,6 +521,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqnhx8w-f4xy6",
+      "world": "oria",
+      "name": "End dungeon 2",
+      "dim": "overworld",
+      "x": 3338,
+      "y": -2,
+      "z": 4133,
+      "type": "dungeon",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
