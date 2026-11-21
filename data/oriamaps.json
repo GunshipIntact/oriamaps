@@ -782,6 +782,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqoux06-6ilju",
+      "world": "oria",
+      "name": "ErsatzSilver Felix Hause",
+      "dim": "overworld",
+      "x": 1119,
+      "y": 64,
+      "z": -991,
+      "type": "landmark",
+      "finder": "ErsatzSilver",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
