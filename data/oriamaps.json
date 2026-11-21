@@ -740,6 +740,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqoreid-luof0",
+      "world": "oria",
+      "name": "Sheep Farm",
+      "dim": "overworld",
+      "x": 1167,
+      "y": 64,
+      "z": -911,
+      "type": "farm",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
