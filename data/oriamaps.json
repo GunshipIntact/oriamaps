@@ -726,6 +726,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqoqog4-r4nfa",
+      "world": "oria",
+      "name": "Autobrauerei",
+      "dim": "overworld",
+      "x": 1133,
+      "y": 63,
+      "z": -915,
+      "type": "landmark",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
