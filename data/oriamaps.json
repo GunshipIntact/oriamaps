@@ -549,6 +549,33 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwqnkjom-f263l",
+      "world": "oria",
+      "name": "Main Nether Portal",
+      "dim": "overworld",
+      "x": 1138,
+      "y": 62,
+      "z": -910,
+      "type": "portal",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": "dot-mwqnkjom-22l6u"
+    },
+    {
+      "id": "dot-mwqnkjom-22l6u",
+      "world": "oria",
+      "picture": null,
+      "name": "Main Nether Portal",
+      "dim": "nether",
+      "x": 144,
+      "y": 129,
+      "z": -114,
+      "type": "portal",
+      "finder": "Brickmister69",
+      "link": "dot-mwqnkjom-f263l"
     }
   ]
 }
