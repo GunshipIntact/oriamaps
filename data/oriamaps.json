@@ -978,6 +978,33 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwtdcjkl-erq23",
+      "world": "oria",
+      "name": "Pale Garden Portal (overworld)",
+      "dim": "overworld",
+      "x": 10240,
+      "y": 111,
+      "z": 5739,
+      "type": "portal",
+      "finder": "",
+      "picture": null,
+      "comment": "",
+      "link": "dot-mwtdcjkl-s0kn8"
+    },
+    {
+      "id": "dot-mwtdcjkl-s0kn8",
+      "world": "oria",
+      "picture": null,
+      "name": "Pale Garden Portal (overworld)",
+      "dim": "nether",
+      "x": 1280,
+      "y": null,
+      "z": 717,
+      "type": "portal",
+      "finder": "",
+      "link": "dot-mwtdcjkl-erq23"
     }
   ]
 }
