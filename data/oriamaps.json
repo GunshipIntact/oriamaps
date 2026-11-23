@@ -880,6 +880,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwtd60ck-m8cnv",
+      "world": "oria",
+      "name": "Nether Fortress 2",
+      "dim": "nether",
+      "x": 534,
+      "y": 73,
+      "z": -47,
+      "type": "dungeon",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
