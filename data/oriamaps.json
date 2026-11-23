@@ -950,6 +950,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwtdaib7-6thih",
+      "world": "oria",
+      "name": "Dappled Forest",
+      "dim": "overworld",
+      "x": 11499,
+      "y": 67,
+      "z": 1060,
+      "type": "biome",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
