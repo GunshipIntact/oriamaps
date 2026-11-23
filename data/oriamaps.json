@@ -964,6 +964,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwtdb953-wzgqw",
+      "world": "oria",
+      "name": "Pale Garden",
+      "dim": "overworld",
+      "x": 10259,
+      "y": 87,
+      "z": 5829,
+      "type": "biome",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
