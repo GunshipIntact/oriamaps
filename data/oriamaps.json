@@ -922,6 +922,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwtd9io1-3amec",
+      "world": "oria",
+      "name": "Sulfur Cave 2",
+      "dim": "overworld",
+      "x": 6451,
+      "y": 69,
+      "z": -1481,
+      "type": "biome",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
