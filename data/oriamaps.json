@@ -908,6 +908,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwtd8x8a-y8yke",
+      "world": "oria",
+      "name": "Snowy Slopes",
+      "dim": "overworld",
+      "x": 4547,
+      "y": null,
+      "z": -2485,
+      "type": "biome",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
