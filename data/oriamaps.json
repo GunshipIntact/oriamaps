@@ -866,6 +866,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwtd5igq-49p1j",
+      "world": "oria",
+      "name": "Crimson Forest",
+      "dim": "nether",
+      "x": 382,
+      "y": 59,
+      "z": -202,
+      "type": "biome",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
