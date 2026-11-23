@@ -936,6 +936,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwtda0lv-eeuhl",
+      "world": "oria",
+      "name": "Snowy Planes",
+      "dim": "overworld",
+      "x": 7810,
+      "y": 68,
+      "z": 166,
+      "type": "biome",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
