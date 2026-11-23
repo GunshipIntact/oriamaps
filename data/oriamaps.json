@@ -894,6 +894,20 @@
       "picture": null,
       "comment": "",
       "link": null
+    },
+    {
+      "id": "dot-mwtd6uwt-dqn5w",
+      "world": "oria",
+      "name": "warped forest",
+      "dim": "nether",
+      "x": 769,
+      "y": 87,
+      "z": 66,
+      "type": "biome",
+      "finder": "Brickmister69",
+      "picture": null,
+      "comment": "",
+      "link": null
     }
   ]
 }
