@@ -77,6 +77,17 @@ Every change is saved straight into this repository. Everyone sees it within abo
 Note: browsers never let a website block **Ctrl + W** (close tab). While Ctrl is held, OriaMaps asks the browser
 to show "Leave site?" first, so pressing W while going down does not close the map by accident.
 
+## On phones (Android)
+
+The site switches to a phone layout on narrow screens:
+
+- **Search** at the top, **menu button** (top right) for all settings, worlds, saved items, players and owner tools.
+- **Tap** a dot to open its info at the bottom; swipe it down or press X to close. **Route here** starts a route to it.
+- **Route** button (bottom right) opens the route planner and Router from the bottom.
+- **One finger** drag turns the view, **two fingers** pinch to zoom and slide to move, hold **▲ / ▼** to fly up or down.
+- Turned sideways, the panels open at the sides so the map stays visible.
+- Owner editing works the same; "Choose" picture buttons can also take a photo with the camera.
+
 ## Things I added that were not in the description
 
 - A dashed line from each dot down (or up) to the Y = 0 floor, so you can see how high it is.
@@ -101,6 +112,9 @@ to show "Leave site?" first, so pressing W while going down does not close the m
 - Signing in checks that the key can really change files, so a key without "Contents: Read and write" is refused right away.
 - The first world is called "Oria"; rename it any time with + World.
 - The "Leave site?" safety question while Ctrl is held (see Controls).
+- Phones: a **Route here** button in a dot's info (the info sheet covers the Route button), ▲▼ arrows to reorder
+  stopovers (dragging rows does not work with fingers), and pinch zoom of the page itself is switched off so pinching
+  always zooms the map.
 - Ctrl + A / S / D are blocked on the map, so moving down does not select, save or bookmark the page.
 - The site no longer loads a font from Google's servers (that would send every visitor's IP address to Google,
   which German courts have found to break the GDPR). The Minecraft font is part of the site itself.
