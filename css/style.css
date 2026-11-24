@@ -240,3 +240,89 @@ body.light .list-item:hover, body.light .list-item.active { background: rgba(0, 
 .swatch { display: inline-block; width: 14px; height: 14px; border: 2px solid #000; vertical-align: middle; margin-right: 6px; }
 
 .toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-60%); padding: 10px 16px; z-index: 60; max-width: 520px; text-align: center; line-height: 1.35; }
+
+/* ======================================================================
+   Phones (Android): set by main.js as body.mobile when the screen is narrow
+   or a touch phone is turned sideways. PC layout above stays unchanged.
+   ====================================================================== */
+.mobile-only, .sheet-handle { display: none; }
+.route-sheet { display: contents; }
+.logo-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.drawer-back { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 39; }
+
+body.mobile { --sheet-bg: rgb(8, 12, 18); --safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px); --safe-l: env(safe-area-inset-left, 0px); --safe-r: env(safe-area-inset-right, 0px); }
+body.mobile.light { --sheet-bg: rgb(238, 242, 245); }
+body.mobile .mobile-only { display: inline-flex; }
+body.mobile .sheet-handle { display: block; flex: none; width: 56px; height: 6px; margin: 2px auto 8px; background: rgba(255, 255, 255, 0.45); }
+body.mobile.light .sheet-handle { background: rgba(0, 0, 0, 0.3); }
+body.mobile #map { right: 0; width: 100%; }
+body.mobile input, body.mobile select, body.mobile textarea { font-size: 16px; } /* stops Android zooming into fields */
+body.mobile .hover-bubbles { display: none !important; } /* no hover on touch: tap a dot instead */
+
+/* Top: search bar and menu button */
+body.mobile .search-wrap { left: calc(8px + var(--safe-l)); right: calc(60px + var(--safe-r)); top: calc(8px + var(--safe-t)); width: auto; }
+body.mobile .search-field { height: 44px; }
+body.mobile .icon-btn { width: 44px; height: 44px; }
+body.mobile .menu-btn { position: fixed; top: calc(8px + var(--safe-t)); right: calc(8px + var(--safe-r)); z-index: 22; }
+
+/* Menu drawer (the PC sidebar) */
+body.mobile .sidebar { width: min(300px, 86vw); padding: calc(14px + var(--safe-t)) 14px calc(14px + var(--safe-b)) 18px; transform: translateX(105%); transition: transform 0.2s ease; z-index: 40; }
+body.mobile.drawer-open .sidebar { transform: none; }
+body.mobile .sidebar .btn.small { height: 38px; font-size: 15px; }
+body.mobile .sidebar .seg .btn { height: 38px; }
+body.mobile .check { min-height: 34px; font-size: 16px; }
+body.mobile .sidebar .world-wrap { position: static; transform: none; }
+body.mobile .sidebar .world-btn { width: 100%; min-width: 0; height: 40px; }
+body.mobile .sidebar .menu { position: static; margin-top: 4px; }
+body.mobile .sidebar .editor-wrap { position: static; transform: none; }
+body.mobile .sidebar .editor-bar { flex-wrap: wrap; }
+
+/* Bottom corners: compass + view size on the left, up/down + Route on the right */
+body.mobile .compass-btn { left: calc(8px + var(--safe-l)); bottom: calc(8px + var(--safe-b)); }
+body.mobile .view-size { left: calc(8px + var(--safe-l)); bottom: calc(66px + var(--safe-b)); font-size: 11px; max-width: calc(100vw - 90px); white-space: normal; }
+body.mobile .compass-panel { left: calc(8px + var(--safe-l)); bottom: calc(66px + var(--safe-b)); z-index: 21; }
+body.mobile .route-open-btn { position: fixed; right: calc(8px + var(--safe-r)); bottom: calc(8px + var(--safe-b)); height: 50px; padding: 0 20px; font-size: 17px; z-index: 20; }
+body.mobile .updown { position: fixed; right: calc(8px + var(--safe-r)); bottom: calc(68px + var(--safe-b)); flex-direction: column; gap: 6px; z-index: 20; }
+body.mobile .updown .btn { width: 50px; height: 50px; touch-action: none; }
+body.mobile.view2d .updown { display: none; }
+
+/* Route planner + Router: a sheet that slides up from the bottom */
+body.mobile .route-sheet { display: flex; flex-direction: column; gap: 10px; position: fixed; left: 0; right: 0; bottom: 0; max-height: 80vh; overflow-y: auto; padding: 8px calc(12px + var(--safe-r)) calc(14px + var(--safe-b)) calc(12px + var(--safe-l)); background: var(--sheet-bg); box-shadow: 0 -2px 0 #000, 0 -4px 0 rgba(255, 255, 255, 0.12); z-index: 30; transform: translateY(105%); transition: transform 0.2s ease; overscroll-behavior: contain; }
+body.mobile.route-open .route-sheet { transform: none; }
+body.mobile .route-box, body.mobile .router { position: static; width: auto; max-height: none; }
+body.mobile .router { overflow: visible; }
+body.mobile .router-rows { overflow: visible; }
+body.mobile .route-box .btn { height: 40px; }
+body.mobile .route-box .field { height: 42px; }
+
+/* Dot info, saved items and players: a sheet from the bottom. Search results drop down under the search bar. */
+body.mobile .left-panel { left: 0; right: 0; width: auto; top: auto; bottom: 0; max-height: 62vh; padding-bottom: var(--safe-b); background: var(--sheet-bg); box-shadow: 0 -2px 0 #000; z-index: 31; overscroll-behavior: contain; }
+body.mobile .left-panel[data-kind="results"] { top: calc(60px + var(--safe-t)); bottom: auto; left: calc(8px + var(--safe-l)); right: calc(8px + var(--safe-r)); max-height: 50vh; background: transparent; box-shadow: none; padding-bottom: 0; }
+body.mobile .left-panel .dot-card .pic { width: 100%; max-width: 280px; height: 140px; }
+body.mobile .list-item { min-height: 48px; }
+body.mobile .close-btn { width: 36px; height: 36px; }
+
+/* Sideways phone: the sheets become side panels so the map stays visible */
+body.mobile.landscape .route-sheet { left: auto; top: 0; width: min(390px, 50vw); max-height: none; padding-top: calc(10px + var(--safe-t)); transform: translateX(105%); }
+body.mobile.landscape.route-open .route-sheet { transform: none; }
+body.mobile.landscape .left-panel:not([data-kind="results"]) { right: auto; top: calc(60px + var(--safe-t)); width: min(390px, 50vw); max-height: none; }
+body.mobile.landscape .left-panel[data-kind="results"] { right: auto; width: min(390px, 50vw); }
+body.mobile.landscape .search-wrap { right: auto; width: min(390px, 50vw); }
+body.mobile.landscape .sheet-handle { display: none; }
+
+/* Windows (owner tools, dialogs) */
+body.mobile .modal-back { padding: calc(8px + var(--safe-t)) 8px calc(8px + var(--safe-b)); align-items: flex-start; }
+body.mobile .gui { padding: 14px; max-height: calc(100vh - 16px); }
+body.mobile .gui .cols { grid-template-columns: 1fr; }
+body.mobile .gui .choices.grid3 { grid-template-columns: repeat(2, 1fr); }
+body.mobile .gui table { display: block; overflow-x: auto; }
+body.mobile .gui .btn { min-height: 38px; }
+
+body.mobile .toast { bottom: calc(70px + var(--safe-b)); transform: translateX(-50%); max-width: 90vw; }
+body.mobile .empty-note { transform: translate(-50%, -50%); width: 86vw; }
+
+/* Router: arrows to reorder your own stopovers (dragging does not work with fingers) */
+.move-btns { display: none; }
+body.mobile .move-btns { display: inline-flex; gap: 4px; margin-left: 4px; vertical-align: middle; }
+body.mobile .move-btns .btn, body.mobile .rrow .remove { width: 30px; height: 30px; padding: 0; font-size: 12px; }
+body.mobile .rrow .handle[draggable] { display: none; }

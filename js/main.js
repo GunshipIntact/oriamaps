@@ -174,19 +174,46 @@ function stepAnim(now) {
 }
 
 // ---------- Map mouse and keyboard ----------
+// Mouse and touch share these handlers.
+// One finger / mouse: drag turns the view around the grabbed point (2D: moves the map); a tap opens a dot.
+// Two fingers: pinch to zoom, slide to move.
+const pointers = new Map();
+let pinch = null;
+const pickRadius = (e) => (e.pointerType === 'mouse' ? 16 : 28);
+const twoFingers = () => {
+  const [a, b] = [...pointers.values()];
+  return { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+};
 canvas.addEventListener('pointerdown', (e) => {
-  if (e.button !== 0) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
   canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   anim = null;
-  drag = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false, dot: renderer.pick(e.clientX, e.clientY), pivot: null };
-  if (!drag.dot && S.view === '3d') drag.pivot = cam.pickFocus(e.clientX, e.clientY);
   hideHover();
+  if (pointers.size === 2) { // second finger: switch from turning to pinch / move
+    drag = null;
+    pinch = twoFingers();
+    canvas.classList.add('dragging');
+    return;
+  }
+  if (pointers.size > 2) return;
+  drag = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false, dot: renderer.pick(e.clientX, e.clientY, pickRadius(e)), pivot: null };
+  if (!drag.dot && S.view === '3d') drag.pivot = cam.pickFocus(e.clientX, e.clientY);
 });
 canvas.addEventListener('pointermove', (e) => {
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pinch && pointers.size >= 2) {
+    const now = twoFingers();
+    cam.zoomAt(now.x, now.y, pinch.dist / now.dist);
+    if (S.view === '3d') cam.pan3d(now.x - pinch.x, now.y - pinch.y); else cam.pan2d(now.x - pinch.x, now.y - pinch.y);
+    pinch = now;
+    dirty = true;
+    return;
+  }
   if (drag) {
     const dx = e.clientX - drag.lx, dy = e.clientY - drag.ly;
     drag.lx = e.clientX; drag.ly = e.clientY;
-    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 4) {
+    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > (e.pointerType === 'mouse' ? 4 : 8)) {
       drag.moved = true;
       if (S.view === '3d' && !drag.pivot) drag.pivot = cam.pickFocus(drag.x, drag.y);
       canvas.classList.add('dragging');
@@ -197,19 +224,26 @@ canvas.addEventListener('pointermove', (e) => {
     }
     return;
   }
+  if (e.pointerType !== 'mouse') return; // hovering only exists with a mouse
   const id = renderer.pick(e.clientX, e.clientY);
   canvas.classList.toggle('over-dot', Boolean(id));
   if (id !== S.hoverId) { S.hoverId = id; dirty = true; }
   if (id) showHover(id, e.clientX, e.clientY); else hideHover();
 });
-const endDrag = () => {
-  if (drag && !drag.moved && drag.dot) selectDot(drag.dot);
+const endPointer = (e) => {
+  pointers.delete(e.pointerId);
+  if (pinch) {
+    if (pointers.size < 2) pinch = null;
+    if (pointers.size === 0) canvas.classList.remove('dragging');
+    return; // lifting one of two fingers never counts as a tap or starts a turn
+  }
+  if (drag && !drag.moved && drag.dot && e.type === 'pointerup') selectDot(drag.dot);
   drag = null;
   canvas.classList.remove('dragging');
 };
-canvas.addEventListener('pointerup', endDrag);
-canvas.addEventListener('pointercancel', endDrag);
-canvas.addEventListener('pointerleave', () => { if (!drag) { hideHover(); if (S.hoverId) { S.hoverId = null; dirty = true; } } });
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', endPointer);
+canvas.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && !drag) { hideHover(); if (S.hoverId) { S.hoverId = null; dirty = true; } } });
 canvas.addEventListener('wheel', (e) => {
   e.preventDefault();
   anim = null;
@@ -264,6 +298,7 @@ function dotCardHTML(d, { pinned = false, linked = false } = {}) {
       <div class="slot pic">${pictureImg(d)}</div>
     </div>
     ${d.comment ? `<p class="comment">${esc(d.comment)}</p>` : ''}
+    ${pinned && !linked ? `<div class="actions mobile-only"><button class="btn small green" type="button" data-act="route-to" data-id="${d.id}">Route here</button></div>` : ''}
     ${owner ? `<div class="actions">${linked ? '' : `<button class="btn small" type="button" data-act="edit-dot" data-id="${d.id}">Edit</button>`}<button class="btn small red" type="button" data-act="delete-dot" data-id="${d.id}">Delete${linked ? ' this portal' : ''}</button></div>` : ''}
   </div>`;
 }
@@ -291,8 +326,12 @@ function hideHover() { hoverEl.hidden = true; hoverEl.dataset.id = ''; }
 
 // ---------- Left panel (pinned dot, results, saved, players – the newest replaces the others) ----------
 const leftEl = $('left-panel');
-function showLeft(kind, html) { leftEl.innerHTML = html; leftEl.hidden = false; leftEl.scrollTop = 0; S.leftKind = kind; }
-function closeLeft() { leftEl.hidden = true; leftEl.innerHTML = ''; S.leftKind = null; }
+function showLeft(kind, html) {
+  leftEl.innerHTML = html; leftEl.hidden = false; leftEl.scrollTop = 0; S.leftKind = kind;
+  leftEl.dataset.kind = kind;
+  if (S.mobile && kind !== 'results') { setRouteSheet(false); closeDrawer(); }
+}
+function closeLeft() { leftEl.hidden = true; leftEl.innerHTML = ''; S.leftKind = null; leftEl.dataset.kind = ''; }
 
 function selectDot(id) {
   S.selectedId = id;
@@ -307,6 +346,14 @@ leftEl.addEventListener('click', (e) => {
   const act = t.dataset.act;
   if (act === 'close-left') { closeLeft(); return; } // the dot stays the compass target ("last clicked dot")
   if (act === 'edit-dot') return app.editor?.editDot(t.dataset.id);
+  if (act === 'route-to') { // phones: the dot sheet covers the Route button, so routing starts from here
+    const d = dotById(t.dataset.id);
+    $('dest-input').value = displayName(d);
+    closeLeft();
+    setRouteSheet(true);
+    if (!$('start-input').value.trim()) $('start-input').focus(); else calcRoute({ fresh: true });
+    return;
+  }
   if (act === 'delete-dot') return app.editor?.deleteDot(t.dataset.id);
   if (act === 'unsave-loc') { e.stopPropagation(); saved.update(S.worldId, (s) => { s.locations = s.locations.filter((x) => x !== t.dataset.id); }); updateStar(); return openSaved('locations'); }
   if (act === 'delete-route') { e.stopPropagation(); return deleteSavedRoute(t.dataset.id); }
@@ -468,6 +515,7 @@ $('view-seg').addEventListener('click', (e) => {
   if (S.view === '2d') { S.saved3d = { yaw: cam.yaw, pitch: cam.pitch }; cam.mode = '2d'; }
   else { cam.mode = '3d'; if (S.saved3d) { cam.yaw = S.saved3d.yaw; cam.pitch = S.saved3d.pitch; } }
   prefs.set({ view: S.view });
+  document.body.classList.toggle('view2d', S.view === '2d');
   renderChecks(); dirty = true;
 });
 $('grid-seg').addEventListener('click', (e) => {
@@ -578,6 +626,7 @@ function calcRoute({ fresh = false } = {}) {
 function showRouter(message) {
   const R = S.route, res = R.result;
   R.shown = true;
+  if (S.mobile) setRouteSheet(true);
   $('router').hidden = false;
   const msg = $('router-msg');
   msg.hidden = !message;
@@ -602,7 +651,7 @@ function showRouter(message) {
     const isStop = p.kind === 'stop';
     return `<div class="rrow" data-index="${i}" ${isStop ? `data-stop="${p.stopUid}"` : ''} ${p.dotId ? `data-hover-dot="${p.dotId}"` : `data-hover-xyz="${esc(name)}"`}>
       <span class="handle" ${isStop ? 'draggable="true" title="Drag to reorder"' : ''}>${isStop ? '⋮' : ''}</span>
-      <span class="who">${label}${isStop ? ` <button class="btn remove" type="button" data-remove="${p.stopUid}" aria-label="Remove this point">X</button>` : ''}<span class="sub" style="color:${dimColor(p.dim)}">${esc(name)}</span></span>
+      <span class="who">${label}${isStop ? ` <button class="btn remove" type="button" data-remove="${p.stopUid}" aria-label="Remove this point">X</button><span class="move-btns"><button class="btn" type="button" data-move="-1" data-uid="${p.stopUid}" aria-label="Move this point up">▲</button><button class="btn" type="button" data-move="1" data-uid="${p.stopUid}" aria-label="Move this point down">▼</button></span>` : ''}<span class="sub" style="color:${dimColor(p.dim)}">${esc(name)}</span></span>
       ${ctl}</div>`;
   }).join('');
 }
@@ -633,6 +682,15 @@ rowsEl.addEventListener('change', (e) => {
   calcRoute();
 });
 rowsEl.addEventListener('click', (e) => {
+  const mv = e.target.closest('[data-move]');
+  if (mv) {
+    const stops = S.route.stops;
+    const i = stops.findIndex((s) => s.uid === mv.dataset.uid);
+    const j = i + Number(mv.dataset.move);
+    if (i < 0 || j < 0 || j >= stops.length) return;
+    [stops[i], stops[j]] = [stops[j], stops[i]];
+    return calcRoute();
+  }
   const rm = e.target.closest('[data-remove]');
   if (!rm) return;
   S.route.stops = S.route.stops.filter((s) => s.uid !== rm.dataset.remove);
@@ -826,6 +884,85 @@ function promptDialog(title, label, value = '') {
   });
 }
 
+// ---------- Phones ----------
+// Narrow screens (or a touch phone turned sideways) get the phone layout: menu drawer, bottom sheets,
+// on-screen up/down buttons. The PC layout is untouched.
+const mobileMQ = window.matchMedia('(max-width: 760px), (pointer: coarse) and (max-height: 520px)');
+function closeDrawer() {
+  document.body.classList.remove('drawer-open');
+  $('drawer-back').hidden = true;
+  $('menu-btn').setAttribute('aria-expanded', 'false');
+}
+function openDrawer() {
+  document.body.classList.add('drawer-open');
+  $('drawer-back').hidden = false;
+  $('menu-btn').setAttribute('aria-expanded', 'true');
+}
+function setRouteSheet(open) {
+  document.body.classList.toggle('route-open', open);
+  $('route-open-btn').setAttribute('aria-expanded', String(open));
+  if (open && S.leftKind && S.leftKind !== 'results') closeLeft();
+}
+function applyMobile() {
+  const m = mobileMQ.matches;
+  const was = S.mobile;
+  S.mobile = m;
+  document.body.classList.toggle('mobile', m);
+  document.body.classList.toggle('landscape', m && window.innerWidth > window.innerHeight);
+  if (m !== was) {
+    const side = $('sidebar');
+    if (m) { // world picker and owner tools move into the menu
+      side.insertBefore($('world-wrap'), side.children[1]);
+      side.insertBefore($('editor-wrap'), side.querySelector('.side-bottom'));
+    } else {
+      document.body.insertBefore($('world-wrap'), $('route-sheet'));
+      document.body.insertBefore($('editor-wrap'), side);
+      closeDrawer();
+      setRouteSheet(false);
+    }
+  }
+  renderer.resize();
+  dirty = true;
+}
+mobileMQ.addEventListener('change', applyMobile);
+window.addEventListener('resize', () => document.body.classList.toggle('landscape', S.mobile && window.innerWidth > window.innerHeight));
+$('menu-btn').addEventListener('click', () => (document.body.classList.contains('drawer-open') ? closeDrawer() : openDrawer()));
+$('drawer-close').addEventListener('click', closeDrawer);
+$('drawer-back').addEventListener('click', closeDrawer);
+// Buttons in the menu that open something else close the menu first.
+$('sidebar').addEventListener('click', (e) => {
+  if (S.mobile && e.target.closest('#saved-loc-btn, #saved-route-btn, #players-btn, [data-edit], #owner-btn')) closeDrawer();
+});
+$('route-open-btn').addEventListener('click', () => setRouteSheet(!document.body.classList.contains('route-open')));
+// Hold ▲ / ▼ to fly up or down (like Space / Ctrl on PC).
+for (const [id, key] of [['up-btn', ' '], ['down-btn', 'ctrl']]) {
+  const b = $(id);
+  b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.setPointerCapture(e.pointerId); keys.add(key); });
+  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, () => keys.delete(key));
+  b.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+// Swipe a bottom sheet down to close it.
+function swipeToClose(el, close) {
+  let startY = null, dy = 0;
+  el.addEventListener('touchstart', (e) => {
+    if (!S.mobile || document.body.classList.contains('landscape') || el.scrollTop > 0) { startY = null; return; }
+    startY = e.touches[0].clientY; dy = 0;
+  }, { passive: true });
+  el.addEventListener('touchmove', (e) => {
+    if (startY === null) return;
+    dy = e.touches[0].clientY - startY;
+    if (dy > 0) { el.style.transition = 'none'; el.style.transform = `translateY(${dy}px)`; }
+  }, { passive: true });
+  el.addEventListener('touchend', () => {
+    if (startY === null) return;
+    el.style.transition = ''; el.style.transform = '';
+    if (dy > 80) close();
+    startY = null;
+  });
+}
+swipeToClose(leftEl, () => closeLeft());
+swipeToClose($('route-sheet'), () => setRouteSheet(false));
+
 // ---------- Refresh everything after data changes ----------
 function refreshAll() {
   if (!world()) S.worldId = S.data.worlds[0]?.id || null;
@@ -865,7 +1002,8 @@ async function init() {
   if (p.grid) S.grid = p.grid;
   if (p.view === '2d') { S.view = '2d'; cam.mode = '2d'; }
   applyTheme();
-  renderer.resize();
+  applyMobile();
+  document.body.classList.toggle('view2d', S.view === '2d');
   drawCompass($('compass-icon'), 0);
   try {
     S.data = await loadData();

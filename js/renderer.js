@@ -120,6 +120,15 @@ export class Camera {
     this.pitch = newPitch;
   }
 
+  // Two-finger slide in 3D: the ground moves with the fingers (horizontally).
+  pan3d(dx, dy) {
+    const k = this.viewSize / this.h;
+    const rx = Math.cos(this.yaw), rz = -Math.sin(this.yaw);
+    const fx = -Math.sin(this.yaw), fz = -Math.cos(this.yaw);
+    this.target.x += (-rx * dx + fx * dy) * k;
+    this.target.z += (-rz * dx + fz * dy) * k;
+  }
+
   pan2d(dx, dy) {
     this.target.x -= dx / this.k;
     this.target.z -= dy / this.k;
